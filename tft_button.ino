@@ -21,10 +21,18 @@ void button4Callback(ButtonState_t state) {
     Serial << F("Button4 state changed to: ") << TftButton::decodeState(state) << endl;
 }
 
-TftButton button1(&tft, 50, 10, 60, 30, "Push", ButtonType::PUSHABLE, button1Callback);
-TftButton button2(&tft, 50, 80, 60, 30, "Sw-1", ButtonType::TOGGLE, button2Callback);
-TftButton button3(&tft, 50, 150, 60, 30, "Sw-2", ButtonType::TOGGLE, button3Callback, ButtonState::ON);
-TftButton button4(&tft, 50, 220, 60, 30, "Dis", ButtonType::TOGGLE, button4Callback); // Disabled állapotú gomb
+#define BUTTONS_X_START 10 // Gombok kezdő X koordinátája
+#define BUTTON_W 60        // gomb szélesség
+#define BUTTON_H 30        // gomb magasság
+#define BUTTONS_Y 100      // Gombok fix Y pozíciója
+#define BUTTONS_GAP 20     // A gombok közötti térköz
+#define BUTTON_Y(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
+TftButton buttons[] = {
+    TftButton(&tft, BUTTON_Y(0), BUTTONS_Y, BUTTON_W, BUTTON_H, "Push", ButtonType::PUSHABLE, button1Callback),
+    TftButton(&tft, BUTTON_Y(1), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-1", ButtonType::TOGGLE, button2Callback),
+    TftButton(&tft, BUTTON_Y(2), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-2", ButtonType::TOGGLE, button3Callback, ButtonState::ON),
+    TftButton(&tft, BUTTON_Y(3), BUTTONS_Y, BUTTON_W, BUTTON_H, "Dis", ButtonType::TOGGLE, button4Callback) // Disabled állapotú gomb
+};
 
 /**
  *
@@ -49,11 +57,10 @@ void setup() {
     // tft.fillScreen(TFT_BLACK);
     // Serial << "button1: " << button1.getState() << endl;
 
-    button1.draw();
-    button2.draw();
-    button3.draw();
-    button4.draw();
-    button4.setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
+    for (TftButton &btn : buttons) {
+        btn.draw();
+    }
+    buttons[3].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
 }
 
 /**
@@ -63,9 +70,8 @@ void loop() {
 
     static uint16_t tx, ty;
     bool touched = tft.getTouch(&tx, &ty, 40); // A treshold értékét megnöveljük a default 20msec-ről
-    // A gombok service metódusainak hívás
-    button1.service(touched, tx, ty);
-    button2.service(touched, tx, ty);
-    button3.service(touched, tx, ty);
-    button4.service(touched, tx, ty);
+    // A gombok service metódusainak hívása
+    for (TftButton &btn : buttons) {
+        btn.service(touched, tx, ty);
+    }
 }
