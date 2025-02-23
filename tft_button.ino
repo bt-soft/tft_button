@@ -21,10 +21,10 @@ void button4Callback(ButtonState_t state) {
     Serial << F("Button4 state changed to: ") << TftButton::decodeState(state) << endl;
 }
 
-TftButton button1(&tft, 50, 10, 100, 50, "Push", ButtonType::PUSHABLE, button1Callback);
-TftButton button2(&tft, 50, 80, 100, 50, "Switch-1", ButtonType::TOGGLE, button2Callback);
-TftButton button3(&tft, 50, 150, 100, 50, "Switch-2", ButtonType::TOGGLE, button3Callback, ButtonState::ON);
-TftButton button4(&tft, 50, 220, 100, 50, "Disabled", ButtonType::TOGGLE, button4Callback); // Disabled állapotú gomb
+TftButton button1(&tft, 50, 10, 60, 30, "Push", ButtonType::PUSHABLE, button1Callback);
+TftButton button2(&tft, 50, 80, 60, 30, "Sw-1", ButtonType::TOGGLE, button2Callback);
+TftButton button3(&tft, 50, 150, 60, 30, "Sw-2", ButtonType::TOGGLE, button3Callback, ButtonState::ON);
+TftButton button4(&tft, 50, 220, 60, 30, "Dis", ButtonType::TOGGLE, button4Callback); // Disabled állapotú gomb
 
 /**
  *

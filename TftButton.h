@@ -13,7 +13,7 @@ typedef enum ButtonState_t {
     OFF,
     ON,
     DISABLED,
-    //---- technikai állapot
+    //---- technikai állapotok
     HOLD,
     PUSHED // csak az esemény jelzésére a calbback függvénynek, nincs színhez kötve az állapota
 } ButtonState;
@@ -77,18 +77,8 @@ private:
         return (tx >= x && tx <= x + w && ty >= y && ty <= y + h);
     }
 
-public:
     /**
-     *
-     */
-    TftButton(TFT_eSPI *pTft, int x, int y, int w, int h, String label, ButtonType type, ButtonCallback callback, ButtonState state = OFF)
-        : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
-
-        this->state = this->oldState = state;
-    }
-
-    /**
-     *
+     * Benyomott gomb háttérszín gradiens
      */
     uint16_t darkenColor(uint16_t color, uint8_t amount) {
         uint8_t r = (color & 0xF800) >> 11;
@@ -102,17 +92,27 @@ public:
         return (r << 11) | (g << 5) | b;
     }
 
+public:
+    /**
+     *
+     */
+    TftButton(TFT_eSPI *pTft, int x, int y, int w, int h, String label, ButtonType type, ButtonCallback callback, ButtonState state = OFF)
+        : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
+
+        this->state = this->oldState = state;
+    }
+
     /**
      * Kirajzolás
      */
     void draw() {
 
         if (buttonPressed) {
-            // A gomb teljes szélességét és magasságát kihasználó sötétedés
-            uint8_t steps = 6; // Több lépés, erősebb hatás
-            uint8_t stepWidth = w / steps;
-            uint8_t stepHeight = h / steps;
-            for (uint8_t i = 0; i < steps; i++) {
+// A gomb teljes szélességét és magasságát kihasználó sötétedés -> benyomás hatás keltés
+#define DARKEN_COLORS_STEPS 6 // Több lépés, erősebb hatás
+            uint8_t stepWidth = w / DARKEN_COLORS_STEPS;
+            uint8_t stepHeight = h / DARKEN_COLORS_STEPS;
+            for (uint8_t i = 0; i < DARKEN_COLORS_STEPS; i++) {
                 uint16_t fadedColor = darkenColor(colors[oldState], i * 30); // Erősebb sötétítés
                 pTft->fillRoundRect(x + i * stepWidth / 2, y + i * stepHeight / 2, w - i * stepWidth, h - i * stepHeight, 5, fadedColor);
             }
@@ -120,21 +120,29 @@ public:
             pTft->fillRoundRect(x, y, w, h, 5, colors[state]);
         }
 
+        // zöld a keret, ha aktív, narancs ha nyomják
         pTft->drawRoundRect(x, y, w, h, 5, state == ON ? TFT_GREEN : buttonPressed ? TFT_ORANGE
-                                                                                   : TFT_WHITE); // zöld a keret, ha aktív, narancs ha nyomják
-        pTft->setTextColor(state == ON ? TFT_GREEN : buttonPressed ? TFT_ORANGE
-                                                                   : TFT_WHITE); // zöld a szöveg, ha aktív, narancs ha nyomják
-        pTft->setTextDatum(MC_DATUM);                                            // Az (x, y) koordináta a szöveg középpontja
+                                                                                   : TFT_WHITE);
+        // zöld a szöveg, ha aktív, narancs ha nyomják
+        pTft->setTextColor(state == DISABLED ? TFT_LIGHTGREY : state == ON ? TFT_GREEN
+                                                           : buttonPressed ? TFT_ORANGE
+                                                                           : TFT_WHITE);
+        // Az (x, y) koordináta a szöveg középpontja
+        pTft->setTextDatum(MC_DATUM);
 
+        // Fontváltás a gomb feliratozásához
         pTft->setFreeFont(&FreeSansBold9pt7b);
         pTft->setTextSize(1);
         pTft->setTextPadding(0);
-        pTft->drawString(label, x + w / 2, y + h / 2);
+#define BUTTON_LABEL_Y_OFFSET 3
+        pTft->drawString(label, x + w / 2, y - BUTTON_LABEL_Y_OFFSET + h / 2);
 
-        // LED csík kirajzolása ha a gomb aktív vagy push, és nyomják
+// LED csík kirajzolása ha a gomb aktív vagy push, és nyomják
+#define BUTTON_LED_HEIGHT 5
         if (state == ON or (type == PUSHABLE and buttonPressed)) {
-            int ledHeight = 5;
-            pTft->fillRect(x + 5, y + h - ledHeight - 3, w - 10, ledHeight, TFT_GREEN);
+            pTft->fillRect(x + 10, y + h - BUTTON_LED_HEIGHT - 3, w - 20, BUTTON_LED_HEIGHT, TFT_GREEN);
+        } else if (type == TOGGLE) {
+            pTft->fillRect(x + 10, y + h - BUTTON_LED_HEIGHT - 3, w - 20, BUTTON_LED_HEIGHT, TFT_DARKGREEN);
         }
     }
 
@@ -172,6 +180,9 @@ public:
         return state;
     }
 
+    /**
+     * Button állípot -> String konverzió
+     */
     static const __FlashStringHelper *decodeState(ButtonState_t _state) {
         switch (_state) {
         case OFF:
