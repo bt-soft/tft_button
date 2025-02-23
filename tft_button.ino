@@ -25,13 +25,14 @@ void button4Callback(ButtonState_t state) {
 #define BUTTON_W 60        // gomb szélesség
 #define BUTTON_H 30        // gomb magasság
 #define BUTTONS_Y 100      // Gombok fix Y pozíciója
-#define BUTTONS_GAP 20     // A gombok közötti térköz
-#define BUTTON_Y(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
+#define BUTTONS_GAP 3      // A gombok közötti térköz pixelekben
+#define BUTTON_X(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
 TftButton buttons[] = {
-    TftButton(&tft, BUTTON_Y(0), BUTTONS_Y, BUTTON_W, BUTTON_H, "Push", ButtonType::PUSHABLE, button1Callback),
-    TftButton(&tft, BUTTON_Y(1), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-1", ButtonType::TOGGLE, button2Callback),
-    TftButton(&tft, BUTTON_Y(2), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-2", ButtonType::TOGGLE, button3Callback, ButtonState::ON),
-    TftButton(&tft, BUTTON_Y(3), BUTTONS_Y, BUTTON_W, BUTTON_H, "Dis", ButtonType::TOGGLE, button4Callback) // Disabled állapotú gomb
+#define BUTTON_X(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
+    TftButton(&tft, BUTTON_X(0), BUTTONS_Y, BUTTON_W, BUTTON_H, "Push", ButtonType::PUSHABLE, button1Callback),
+    TftButton(&tft, BUTTON_X(1), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-1", ButtonType::TOGGLE, button2Callback),
+    TftButton(&tft, BUTTON_X(2), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-2", ButtonType::TOGGLE, button3Callback, ButtonState::ON),
+    TftButton(&tft, BUTTON_X(3), BUTTONS_Y, BUTTON_W, BUTTON_H, "Dis", ButtonType::TOGGLE, button4Callback) // Disabled állapotú gomb
 };
 
 /**
