@@ -1,0 +1,62 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\cores\\rp2040"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\variants\\rpipico"
+  },
+  {
+    "Sourcefile": "F:\\Elektro\\!Pico\\TFT-SPI\\tft_button\\build\\sketch\\tft_button.ino.cpp",
+    "Include": "Streaming.h",
+    "Includepath": "C:\\Users\\BT\\Documents\\Arduino\\libraries\\Streaming\\src"
+  },
+  {
+    "Sourcefile": "F:\\Elektro\\!Pico\\TFT-SPI\\tft_button\\build\\sketch\\tft_button.ino.cpp",
+    "Include": "TFT_eSPI.h",
+    "Includepath": "C:\\Users\\BT\\Documents\\Arduino\\libraries\\TFT_eSPI"
+  },
+  {
+    "Sourcefile": "F:\\Elektro\\!Pico\\TFT-SPI\\tft_button\\build\\sketch\\tft_button.ino.cpp",
+    "Include": "SPI.h",
+    "Includepath": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\libraries\\SPI\\src"
+  },
+  {
+    "Sourcefile": "F:\\Elektro\\!Pico\\TFT-SPI\\tft_button\\build\\sketch\\tft_button.ino.cpp",
+    "Include": "LittleFS.h",
+    "Includepath": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\libraries\\LittleFS\\src"
+  },
+  {
+    "Sourcefile": "F:\\Elektro\\!Pico\\TFT-SPI\\tft_button\\build\\sketch\\tft_button.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\BT\\Documents\\Arduino\\libraries\\TFT_eSPI\\TFT_eSPI.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\libraries\\SPI\\src\\SPI.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\libraries\\LittleFS\\src\\LittleFS.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\libraries\\LittleFS\\src\\lfs.c",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\BT\\AppData\\Local\\Arduino15\\packages\\rp2040\\hardware\\rp2040\\4.4.3\\libraries\\LittleFS\\src\\lfs_util.c",
+    "Include": "",
+    "Includepath": null
+  }
+]

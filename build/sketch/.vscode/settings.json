@@ -1,0 +1,10 @@
+#line 1 "F:\\Elektro\\!Pico\\TFT-SPI\\tft_button\\.vscode\\settings.json"
+{
+    "files.associations": {
+        "memory": "cpp",
+        "format": "cpp",
+        "ostream": "cpp",
+        "cstdint": "cpp",
+        "compare": "cpp"
+    }
+}
