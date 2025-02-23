@@ -120,7 +120,7 @@ public:
             pTft->fillRoundRect(x, y, w, h, 5, colors[state]);
         }
 
-        // zöld a keret, ha aktív, narancs ha nyomják
+        // Ha tiltozz, szürke a keret, ha aktív, akkor zöld, narancs ha nyomják
         pTft->drawRoundRect(x, y, w, h, 5, state == DISABLED ? TFT_DARKGREY : state == ON ? TFT_GREEN
                                                                           : buttonPressed ? TFT_ORANGE
                                                                                           : TFT_WHITE);
