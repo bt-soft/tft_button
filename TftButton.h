@@ -39,7 +39,7 @@ private:
     ButtonState oldState;
     ButtonType type;
     ButtonCallback callback;
-    uint16_t colors[3] = {TFT_BLUE, TFT_GREEN, TFT_DARKGREY};
+    uint16_t colors[3] = {TFT_BLUE, TFT_DARKGREEN, TFT_DARKGREY};
     bool buttonPressed; // Flag a gomb nyomva tartásának követésére
 
     /**
@@ -125,7 +125,7 @@ public:
         pTft->setTextDatum(MC_DATUM); // Az (x, y) koordináta a szöveg középpontja
 
         uint8_t oldFont = pTft->textfont;
-        pTft->setTextFont(4);
+        pTft->setTextFont(1);
         uint16_t oldPadding = pTft->getTextPadding();
         pTft->setTextPadding(0);
 
@@ -133,6 +133,12 @@ public:
 
         pTft->setTextFont(oldFont);
         pTft->setTextPadding(oldPadding);
+
+        // LED csík kirajzolása ha a gomb aktív
+        if (state == ON) {
+            int ledHeight = 5;
+            pTft->fillRect(x + 5, y + h - ledHeight - 3, w - 10, ledHeight, TFT_GREEN);
+        }
     }
 
     /**
