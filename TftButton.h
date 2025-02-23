@@ -125,9 +125,9 @@ public:
                                                                           : buttonPressed ? TFT_ORANGE
                                                                                           : TFT_WHITE);
         // zöld a szöveg, ha aktív, narancs ha nyomják
-        pTft->setTextColor(state == DISABLED ? TFT_LIGHTGREY : state == ON ? TFT_GREEN
-                                                           : buttonPressed ? TFT_ORANGE
-                                                                           : TFT_WHITE);
+        pTft->setTextColor(state == DISABLED ? TFT_DARKGREY : state == ON ? TFT_GREEN
+                                                          : buttonPressed ? TFT_ORANGE
+                                                                          : TFT_WHITE);
         // Az (x, y) koordináta a szöveg középpontja
         pTft->setTextDatum(MC_DATUM);
 
