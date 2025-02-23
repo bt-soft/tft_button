@@ -1,7 +1,7 @@
 #ifndef __TFT_BUTTON_H
 #define __TFT_BUTTON_H
 
-#include <Streaming.h>
+#include "ESP_free_fonts.h"
 
 #define TFT_COLOR(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3))
 #define COMPLEMENT_COLOR(color) \
@@ -39,7 +39,7 @@ private:
     ButtonState oldState;
     ButtonType type;
     ButtonCallback callback;
-    uint16_t colors[3] = {TFT_BLUE, TFT_DARKGREEN, TFT_DARKGREY};
+    uint16_t colors[3] = {TFT_COLOR(65, 65, 114), TFT_COLOR(65, 65, 114) /*TFT_DARKGREEN*/, TFT_COLOR(65, 65, 65)};
     bool buttonPressed; // Flag a gomb nyomva tartásának követésére
 
     /**
@@ -120,22 +120,19 @@ public:
             pTft->fillRoundRect(x, y, w, h, 5, colors[state]);
         }
 
-        pTft->drawRoundRect(x, y, w, h, 5, TFT_WHITE); // keret
-        pTft->setTextColor(TFT_WHITE);
-        pTft->setTextDatum(MC_DATUM); // Az (x, y) koordináta a szöveg középpontja
+        pTft->drawRoundRect(x, y, w, h, 5, state == ON ? TFT_GREEN : buttonPressed ? TFT_GREEN
+                                                                                   : TFT_WHITE); // zöld a keret, ha aktív
+        pTft->setTextColor(state == ON ? TFT_GREEN : buttonPressed ? TFT_GREEN
+                                                                   : TFT_WHITE); // zöld a szöveg, ha aktív
+        pTft->setTextDatum(MC_DATUM);                                            // Az (x, y) koordináta a szöveg középpontja
 
-        uint8_t oldFont = pTft->textfont;
-        pTft->setTextFont(1);
-        uint16_t oldPadding = pTft->getTextPadding();
+        pTft->setFreeFont(&FreeSansBold9pt7b);
+        pTft->setTextSize(1);
         pTft->setTextPadding(0);
-
         pTft->drawString(label, x + w / 2, y + h / 2);
 
-        pTft->setTextFont(oldFont);
-        pTft->setTextPadding(oldPadding);
-
         // LED csík kirajzolása ha a gomb aktív
-        if (state == ON) {
+        if (state == ON or (type != TOGGLE and buttonPressed)) {
             int ledHeight = 5;
             pTft->fillRect(x + 5, y + h - ledHeight - 3, w - 10, ledHeight, TFT_GREEN);
         }
