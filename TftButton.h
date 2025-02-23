@@ -120,10 +120,10 @@ public:
             pTft->fillRoundRect(x, y, w, h, 5, colors[state]);
         }
 
-        pTft->drawRoundRect(x, y, w, h, 5, state == ON ? TFT_GREEN : buttonPressed ? TFT_GREEN
-                                                                                   : TFT_WHITE); // zöld a keret, ha aktív
-        pTft->setTextColor(state == ON ? TFT_GREEN : buttonPressed ? TFT_GREEN
-                                                                   : TFT_WHITE); // zöld a szöveg, ha aktív
+        pTft->drawRoundRect(x, y, w, h, 5, state == ON ? TFT_GREEN : buttonPressed ? TFT_ORANGE
+                                                                                   : TFT_WHITE); // zöld a keret, ha aktív, narancs ha nyomják
+        pTft->setTextColor(state == ON ? TFT_GREEN : buttonPressed ? TFT_ORANGE
+                                                                   : TFT_WHITE); // zöld a szöveg, ha aktív, narancs ha nyomják
         pTft->setTextDatum(MC_DATUM);                                            // Az (x, y) koordináta a szöveg középpontja
 
         pTft->setFreeFont(&FreeSansBold9pt7b);
@@ -131,8 +131,8 @@ public:
         pTft->setTextPadding(0);
         pTft->drawString(label, x + w / 2, y + h / 2);
 
-        // LED csík kirajzolása ha a gomb aktív
-        if (state == ON or (type != TOGGLE and buttonPressed)) {
+        // LED csík kirajzolása ha a gomb aktív vagy push, és nyomják
+        if (state == ON or (type == PUSHABLE and buttonPressed)) {
             int ledHeight = 5;
             pTft->fillRect(x + 5, y + h - ledHeight - 3, w - 10, ledHeight, TFT_GREEN);
         }
