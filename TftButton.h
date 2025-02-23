@@ -121,8 +121,9 @@ public:
         }
 
         // zöld a keret, ha aktív, narancs ha nyomják
-        pTft->drawRoundRect(x, y, w, h, 5, state == ON ? TFT_GREEN : buttonPressed ? TFT_ORANGE
-                                                                                   : TFT_WHITE);
+        pTft->drawRoundRect(x, y, w, h, 5, state == DISABLED ? TFT_DARKGREY : state == ON ? TFT_GREEN
+                                                                          : buttonPressed ? TFT_ORANGE
+                                                                                          : TFT_WHITE);
         // zöld a szöveg, ha aktív, narancs ha nyomják
         pTft->setTextColor(state == DISABLED ? TFT_LIGHTGREY : state == ON ? TFT_GREEN
                                                            : buttonPressed ? TFT_ORANGE
