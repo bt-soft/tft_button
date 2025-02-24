@@ -39,25 +39,25 @@ public:
         x = (tft->width() - w) / 2;
         y = (tft->height() - h) / 2;
 
-        uint16_t buttonWidth = w / 3;
-        uint16_t buttonHeight = 30;
-        uint16_t buttonY = y + h - buttonHeight - 10;
+#define DIALOG_BUTTON_HEIGHT 30 // Gomb(ok) magassága a dialógusban
+        uint16_t buttonY = y + h - DIALOG_BUTTON_HEIGHT - 10;
 
         // backgroundBuffer = new uint16_t[w * h]; // Memória foglalása a háttérhez
         backgroundBuffer = (uint16_t *)calloc(w * h, sizeof(uint16_t)); // Memória foglalása a háttérhez
 
-        // Ha van Cancel gomb, akkor az OK gombot balra, Cancel gombot jobbra igazítjuk
-        // Ha nincs Cancel gomb, akkor az OK gombot középre helyezzük
-        uint16_t totalButtonWidth = buttonWidth * 2 + 5;  // A két gomb szélessége és a gap
-        uint16_t gap = 5;                                 // A gombok közötti térköz
-        uint16_t startX = x + (w - totalButtonWidth) / 2; // A gombok kezdő X pozíciója
+        // Kiszedjük a legnagyobb gomb felirat szélességét (10-10 pixel a szélén)
+        uint8_t okButtonWidth = pTft->textWidth(okText) + 20;                          // OK gomb szöveg szélessége + 10-10 pixel a gomb széleihez
+        uint8_t cancelButtonWidth = cancelText ? pTft->textWidth(cancelText) + 20 : 0; // Cancel gomb szöveg szélessége, ha van
 
-        uint16_t okX = startX; // Az OK gomb X pozíciója
-        okButton = new TftButton(pTft, okX, buttonY, buttonWidth, buttonHeight, okText, ButtonType::PUSHABLE, callback);
+        // Ha van Cancel gomb, akkor a két gomb közötti gap-et is figyelembe vesszük
+        uint16_t totalButtonWidth = cancelButtonWidth > 0 ? okButtonWidth + cancelButtonWidth + BUTTONS_GAP : okButtonWidth;
+        uint16_t okX = x + (w - totalButtonWidth) / 2; // Az OK gomb X pozíciója -> a gombok kezdő X pozíciója
+
+        okButton = new TftButton(pTft, okX, buttonY, okButtonWidth, DIALOG_BUTTON_HEIGHT, okText, ButtonType::PUSHABLE, callback);
 
         if (cancelText) {
-            uint16_t cancelX = startX + buttonWidth + gap; // A Cancel gomb X pozíciója
-            cancelButton = new TftButton(pTft, cancelX, buttonY, buttonWidth, buttonHeight, cancelText, ButtonType::PUSHABLE);
+            uint16_t cancelX = okX + okButtonWidth + BUTTONS_GAP; // A Cancel gomb X pozíciója
+            cancelButton = new TftButton(pTft, cancelX, buttonY, cancelButtonWidth, DIALOG_BUTTON_HEIGHT, cancelText, ButtonType::PUSHABLE);
         }
 
         visible = false;
