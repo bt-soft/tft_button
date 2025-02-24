@@ -135,8 +135,8 @@ public:
         pTft->setFreeFont(&FreeSansBold9pt7b);
         pTft->setTextSize(1);
         pTft->setTextPadding(0);
-#define BUTTON_LABEL_Y_OFFSET 3
-        pTft->drawString(label, x + w / 2, y - BUTTON_LABEL_Y_OFFSET + h / 2);
+#define BUTTON_LABEL_MARGIN_TOP 3 // A felirat a gomb felső részéhez képest
+        pTft->drawString(label, x + w / 2, y - BUTTON_LABEL_MARGIN_TOP + h / 2);
 
 // LED csík kirajzolása ha a gomb aktív vagy push, és nyomják
 #define BUTTON_LED_HEIGHT 5

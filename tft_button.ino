@@ -88,7 +88,7 @@ void loop() {
         if (buttonLabel.equals("Push")) {
             if (popUp == nullptr) {
                 // Dialógus ablak létrehozása (tft, szélesség, magasság, üzenet, callback, okText, cancelText)
-                popUp = new PopUpDialog(&tft, 300, 150, "Folytassuk?", popupCallback, "Igen", "Nem");
+                popUp = new PopUpDialog(&tft, 300, 150, "Folytassuk?", popupCallback, "Igen", "Lehet megse kellene");
             }
 
             // Dialógus megjelenítése/elrejtése
