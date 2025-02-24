@@ -14,8 +14,8 @@ typedef enum ButtonState_t {
     ON,
     DISABLED,
     //---- technikai állapotok
-    HOLD,
-    PUSHED // csak az esemény jelzésére a calbback függvénynek, nincs színhez kötve az állapota
+    HOLD,  // Nyomva tartják
+    PUSHED // Csak az esemény jelzésére a calbback függvénynek, nincs színhez kötve az állapota
 } ButtonState;
 
 typedef enum ButtonType_t {
@@ -24,7 +24,7 @@ typedef enum ButtonType_t {
 } ButtonType;
 
 // Callback típusa
-typedef void (*ButtonCallback)(ButtonState_t);
+typedef void (*ButtonCallback)(String, ButtonState_t);
 
 /**
  *
@@ -33,7 +33,7 @@ class TftButton {
 
 private:
     TFT_eSPI *pTft;
-    int x, y, w, h;
+    uint8_t x, y, w, h;
     String label;
     ButtonState state;
     ButtonState oldState;
@@ -66,14 +66,14 @@ private:
 
         draw();
         if (callback) {
-            callback(type == PUSHABLE ? PUSHED : state);
+            callback(label, type == PUSHABLE ? PUSHED : state);
         }
     }
 
     /**
      * A gombot nyomták meg?
      */
-    bool contains(int tx, int ty) {
+    bool contains(uint16_t tx, uint16_t ty) {
         return (tx >= x && tx <= x + w && ty >= y && ty <= y + h);
     }
 
@@ -96,7 +96,7 @@ public:
     /**
      *
      */
-    TftButton(TFT_eSPI *pTft, int x, int y, int w, int h, String label, ButtonType type, ButtonCallback callback, ButtonState state = OFF)
+    TftButton(TFT_eSPI *pTft, uint8_t x, uint8_t y, uint8_t w, uint8_t h, String label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
         : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
 
         this->state = this->oldState = state;
@@ -150,7 +150,7 @@ public:
     /**
      * Touch adat van
      */
-    void service(bool touched, uint16_t tx, uint16_t ty) {
+    void handleTouch(bool touched, uint16_t tx, uint16_t ty) {
 
         // Ha tiltott, akkor nem megyünk tovább
         if (state == DISABLED) {

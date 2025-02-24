@@ -5,20 +5,11 @@ TFT_eSPI tft = TFT_eSPI();
 
 #include "TftButton.h"
 
-void button1Callback(ButtonState_t state) {
-    Serial << F("Button1 state changed to: ") << TftButton::decodeState(state) << endl;
-}
-
-void button2Callback(ButtonState_t state) {
-    Serial << F("Button2 state changed to: ") << TftButton::decodeState(state) << endl;
-}
-
-void button3Callback(ButtonState_t state) {
-    Serial << F("Button3 state changed to: ") << TftButton::decodeState(state) << endl;
-}
-
-void button4Callback(ButtonState_t state) {
-    Serial << F("Button4 state changed to: ") << TftButton::decodeState(state) << endl;
+String buttonLabel = "";
+ButtonState_t buttonState;
+void buttonsCallback(String label, ButtonState_t state) {
+    buttonLabel = label;
+    buttonState = state;
 }
 
 #define BUTTONS_X_START 10 // Gombok kezdő X koordinátája
@@ -29,11 +20,25 @@ void button4Callback(ButtonState_t state) {
 #define BUTTON_X(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
 TftButton buttons[] = {
 #define BUTTON_X(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
-    TftButton(&tft, BUTTON_X(0), BUTTONS_Y, BUTTON_W, BUTTON_H, "Push", ButtonType::PUSHABLE, button1Callback),
-    TftButton(&tft, BUTTON_X(1), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-1", ButtonType::TOGGLE, button2Callback),
-    TftButton(&tft, BUTTON_X(2), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-2", ButtonType::TOGGLE, button3Callback, ButtonState::ON),
-    TftButton(&tft, BUTTON_X(3), BUTTONS_Y, BUTTON_W, BUTTON_H, "Dis", ButtonType::TOGGLE, button4Callback) // Disabled állapotú gomb
+    TftButton(&tft, BUTTON_X(0), BUTTONS_Y, BUTTON_W, BUTTON_H, "Push", ButtonType::PUSHABLE, buttonsCallback),
+    TftButton(&tft, BUTTON_X(1), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-1", ButtonType::TOGGLE, buttonsCallback),
+    TftButton(&tft, BUTTON_X(2), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-2", ButtonType::TOGGLE, buttonsCallback, ButtonState::ON),
+    TftButton(&tft, BUTTON_X(3), BUTTONS_Y, BUTTON_W, BUTTON_H, "Dis", ButtonType::TOGGLE, buttonsCallback) // Disabled állapotú gomb
 };
+
+#include "PopUpDialog.h"
+
+PopUpDialog *popUp = nullptr;
+void popupCallback(String label, ButtonState_t state) {
+
+    Serial << label << F(" dialóg gomb megnyomva, state: ") << TftButton::decodeState(state) << endl;
+
+    // if (popUp != nullptr) {
+    //     popUp->hide();   // Eltünteti a dialógust és visszaállítja a háttért
+    //     delete popUp;    // Töröljük a dialógust
+    //     popUp = nullptr; // Nullázzuk a mutatót, hogy elkerüljük a hibás hivatkozásokat
+    // }
+}
 
 /**
  *
@@ -70,9 +75,34 @@ void setup() {
 void loop() {
 
     static uint16_t tx, ty;
-    bool touched = tft.getTouch(&tx, &ty, 40); // A treshold értékét megnöveljük a default 20msec-ről
+    bool touched = tft.getTouch(&tx, &ty, 40); // A treshold értékét megnöveljük a default 20msec-ről 40-re
     // A gombok service metódusainak hívása
     for (TftButton &btn : buttons) {
-        btn.service(touched, tx, ty);
+        btn.handleTouch(touched, tx, ty);
+    }
+
+    if (buttonLabel.length()) {
+
+        Serial << buttonLabel << F(" state changed to: ") << TftButton::decodeState(buttonState) << endl;
+
+        if (buttonLabel.equals("Push")) {
+            if (popUp == nullptr) {
+                // Dialógus ablak létrehozása (tft, szélesség, magasság, üzenet, callback, okText, cancelText)
+                popUp = new PopUpDialog(&tft, 300, 150, "Folytassuk?", popupCallback, "Igen", "Nem");
+            }
+
+            // Dialógus megjelenítése/elrejtése
+            if (popUp->isVisible()) {
+                popUp->hide();
+            } else {
+                popUp->show();
+            }
+        }
+
+        buttonLabel = "";
+    }
+
+    if (popUp) {
+        popUp->handleTouch(touched, tx, ty);
     }
 }

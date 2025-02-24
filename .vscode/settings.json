@@ -4,6 +4,8 @@
         "format": "cpp",
         "ostream": "cpp",
         "cstdint": "cpp",
-        "compare": "cpp"
+        "compare": "cpp",
+        "string_view": "cpp",
+        "system_error": "cpp"
     }
 }
