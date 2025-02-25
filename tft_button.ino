@@ -26,17 +26,18 @@ TftButton buttons[] = {
     TftButton(&tft, BUTTON_X(3), BUTTONS_Y, BUTTON_W, BUTTON_H, "Dis", ButtonType::TOGGLE, buttonsCallback) // Disabled állapotú gomb
 };
 
-#include "PopUpDialog.h"
+#include "MultiButtonDialog.h"
+// #include "PopUpDialog.h"
 
-PopUpDialog *popUp = nullptr;
+PopupBase *dialog = nullptr;
 void popupCallback(String label, ButtonState_t state) {
 
     Serial << label << F(" dialóg gomb megnyomva, state: ") << TftButton::decodeState(state) << endl;
 
-    if (popUp != nullptr) {
-        popUp->hide();   // Eltünteti a dialógust és visszaállítja a háttért
-        delete popUp;    // Töröljük a dialógust
-        popUp = nullptr; // Nullázzuk a mutatót, hogy elkerüljük a hibás hivatkozásokat
+    if (dialog != nullptr) {
+        dialog->hide();   // Eltünteti a dialógust és visszaállítja a háttért
+        delete dialog;    // Töröljük a dialógust
+        dialog = nullptr; // Nullázzuk a mutatót, hogy elkerüljük a hibás hivatkozásokat
     }
 }
 
@@ -86,23 +87,30 @@ void loop() {
         Serial << buttonLabel << F(" state changed to: ") << TftButton::decodeState(buttonState) << endl;
 
         if (buttonLabel.equals("Push")) {
-            if (popUp == nullptr) {
+            if (dialog == nullptr) {
                 // Dialógus ablak létrehozása (tft, szélesség, magasság, üzenet, callback, okText, cancelText)
-                popUp = new PopUpDialog(&tft, 300, 150, "Folytassuk?", popupCallback, "Igen", "Lehet megse kellene");
+                // dialog = new PopUpDialog(&tft, 300, 150, "Folytassuk?", popupCallback, "Igen", "Lehet megse kellene");
+
+                TftButton btn1(&tft, 0, 0, 80, 30, "OK", ButtonType::PUSHABLE, popupCallback);
+                TftButton btn2(&tft, 0, 0, 80, 30, "Cancel", ButtonType::PUSHABLE, popupCallback);
+                TftButton btn3(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback);
+
+                TftButton *buttons[] = {&btn1, &btn2, &btn3};
+                dialog = new MultiButtonDialog(&tft, 400, 100, buttons, 3);
             }
 
             // Dialógus megjelenítése/elrejtése
-            if (popUp->isVisible()) {
-                popUp->hide();
+            if (dialog->isVisible()) {
+                dialog->hide();
             } else {
-                popUp->show();
+                dialog->show();
             }
         }
 
         buttonLabel = "";
     }
 
-    if (popUp) {
-        popUp->handleTouch(touched, tx, ty);
+    if (dialog) {
+        dialog->handleTouch(touched, tx, ty);
     }
 }

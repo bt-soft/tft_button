@@ -35,12 +35,9 @@ public:
         x = (pTft->width() - w) / 2;
         y = (pTft->height() - h) / 2;
 
-#define DIALOG_BUTTONS_GAP 5    // A gombok közötti térköz pixelekben
-#define DIALOG_BUTTON_HEIGHT 30 // Gomb(ok) magassága a dialógusban
         uint16_t buttonY = y + h - DIALOG_BUTTON_HEIGHT - 10;
 
         // Kiszedjük a legnagyobb gomb felirat szélességét (10-10 pixel a szélén)
-#define DIALOG_BUTTON_TEXT_PADDING_X (2 * 15)                                                                    // 15-15px X padding
         uint8_t okButtonWidth = pTft->textWidth(okText) + DIALOG_BUTTON_TEXT_PADDING_X;                          // OK gomb szöveg szélessége + padding a gomb széleihez
         uint8_t cancelButtonWidth = cancelText ? pTft->textWidth(cancelText) + DIALOG_BUTTON_TEXT_PADDING_X : 0; // Cancel gomb szöveg szélessége, ha van
 
@@ -69,7 +66,7 @@ public:
         drawDialog();
     }
 
-    void handleTouch(bool touched, uint16_t tx, uint16_t ty) {
+    void handleTouch(bool touched, uint16_t tx, uint16_t ty) override {
         okButton->handleTouch(touched, tx, ty);
         if (cancelButton)
             cancelButton->handleTouch(touched, tx, ty);

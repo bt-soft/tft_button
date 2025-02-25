@@ -3,6 +3,10 @@
 
 #include <TFT_eSPI.h>
 
+#define DIALOG_BUTTONS_GAP 5                  // A gombok közötti térköz pixelekben
+#define DIALOG_BUTTON_HEIGHT 30               // Gomb(ok) magassága a dialógusban
+#define DIALOG_BUTTON_TEXT_PADDING_X (2 * 15) // 15-15px X padding
+
 class PopupBase {
 
 private:
@@ -38,6 +42,9 @@ public:
 
     bool isVisible() const {
         return visible;
+    }
+
+    virtual void handleTouch(bool touched, uint16_t tx, uint16_t ty) {
     }
 };
 
