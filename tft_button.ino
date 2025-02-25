@@ -33,11 +33,11 @@ void popupCallback(String label, ButtonState_t state) {
 
     Serial << label << F(" dialóg gomb megnyomva, state: ") << TftButton::decodeState(state) << endl;
 
-    // if (popUp != nullptr) {
-    //     popUp->hide();   // Eltünteti a dialógust és visszaállítja a háttért
-    //     delete popUp;    // Töröljük a dialógust
-    //     popUp = nullptr; // Nullázzuk a mutatót, hogy elkerüljük a hibás hivatkozásokat
-    // }
+    if (popUp != nullptr) {
+        popUp->hide();   // Eltünteti a dialógust és visszaállítja a háttért
+        delete popUp;    // Töröljük a dialógust
+        popUp = nullptr; // Nullázzuk a mutatót, hogy elkerüljük a hibás hivatkozásokat
+    }
 }
 
 /**
