@@ -1,19 +1,15 @@
 #ifndef __POPUPDIALOG_H
 #define __POPUPDIALOG_H
 
+#include "PopupBase.h"
 #include "TftButton.h"
-#include <TFT_eSPI.h>
 
-class PopUpDialog {
+class PopUpDialog : public PopupBase {
 private:
-    TFT_eSPI *pTft;
-    uint16_t x, y, w, h;
     String message;
     TftButton *okButton;
     TftButton *cancelButton = nullptr;
     ButtonCallback callback;
-    uint16_t *backgroundBuffer;
-    bool visible;
 
     void drawDialog() {
         pTft->fillRect(x, y, w, h, TFT_DARKGREY);
@@ -32,19 +28,16 @@ private:
     }
 
 public:
-    PopUpDialog(TFT_eSPI *tft, uint16_t w, uint16_t h, String message, ButtonCallback callback, const char *okText = "OK", const char *cancelText = nullptr)
-        : pTft(tft), w(w), h(h), message(message), callback(callback) {
+    PopUpDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, String message, ButtonCallback callback, const char *okText = "OK", const char *cancelText = nullptr)
+        : PopupBase(pTft, w, h), message(message), callback(callback) {
 
         // Képernyő közepét kiszámítjuk
-        x = (tft->width() - w) / 2;
-        y = (tft->height() - h) / 2;
+        x = (pTft->width() - w) / 2;
+        y = (pTft->height() - h) / 2;
 
 #define DIALOG_BUTTONS_GAP 5    // A gombok közötti térköz pixelekben
 #define DIALOG_BUTTON_HEIGHT 30 // Gomb(ok) magassága a dialógusban
         uint16_t buttonY = y + h - DIALOG_BUTTON_HEIGHT - 10;
-
-        // backgroundBuffer = new uint16_t[w * h]; // Memória foglalása a háttérhez
-        backgroundBuffer = (uint16_t *)calloc(w * h, sizeof(uint16_t)); // Memória foglalása a háttérhez
 
         // Kiszedjük a legnagyobb gomb felirat szélességét (10-10 pixel a szélén)
 #define DIALOG_BUTTON_TEXT_PADDING_X (2 * 15)                                                                    // 15-15px X padding
@@ -63,31 +56,17 @@ public:
             uint16_t cancelX = okX + okButtonWidth + DIALOG_BUTTONS_GAP; // A Cancel gomb X pozíciója
             cancelButton = new TftButton(pTft, cancelX, buttonY, cancelButtonWidth, DIALOG_BUTTON_HEIGHT, cancelText, ButtonType::PUSHABLE);
         }
-
-        visible = false;
     }
 
     ~PopUpDialog() {
         delete okButton;
         if (cancelButton)
             delete cancelButton;
-        free(backgroundBuffer);
     }
 
-    void show() {
-        // Elmentjük a képernyő azon részét, amelyet a dialógus takar
-        pTft->readRect(x, y, w, h, backgroundBuffer); // Háttér mentése
+    void show() override {
+        PopupBase::show();
         drawDialog();
-        visible = true;
-    }
-
-    void hide() {
-        pTft->pushRect(x, y, w, h, backgroundBuffer); // Háttér visszaállítása
-        visible = false;
-    }
-
-    bool isVisible() {
-        return visible;
     }
 
     void handleTouch(bool touched, uint16_t tx, uint16_t ty) {
