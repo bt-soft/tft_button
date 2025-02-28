@@ -71,13 +71,6 @@ private:
     }
 
     /**
-     * A gombot nyomták meg?
-     */
-    bool contains(uint16_t tx, uint16_t ty) {
-        return (tx >= x && tx <= x + w && ty >= y && ty <= y + h);
-    }
-
-    /**
      * Benyomott gomb háttérszín gradiens
      */
     uint16_t darkenColor(uint16_t color, uint8_t amount) {
@@ -186,6 +179,13 @@ public:
             // Ha nincs ugyan touch, de ezt a gombot nyomva tartották eddig
             released();
         }
+    }
+
+    /**
+     * A gombot nyomták meg?
+     */
+    bool contains(uint16_t tx, uint16_t ty) {
+        return (tx >= x && tx <= x + w && ty >= y && ty <= y + h);
     }
 
     /**

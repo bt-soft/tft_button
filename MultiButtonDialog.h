@@ -5,17 +5,16 @@
 #include "TftButton.h"
 
 class MultiButtonDialog : public PopupBase {
+
 private:
+    String message;
     TftButton **buttons;
     uint8_t buttonCount;
 
     void drawDialog() {
-        pTft->fillRect(x, y, w, h, TFT_DARKGREY);
-        pTft->drawRect(x, y, w, h, TFT_WHITE);
-
         pTft->setTextColor(TFT_WHITE);
         pTft->setTextDatum(MC_DATUM);
-        pTft->drawString("Válassz egy opciót:", x + w / 2, y + h / 3);
+        pTft->drawString(message, x + w / 2, contentY);
 
         // Gombok kirajzolása
         for (uint8_t i = 0; i < buttonCount; i++) {
@@ -24,36 +23,64 @@ private:
     }
 
 public:
-    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, TftButton *buttonArray[], uint8_t count)
-        : PopupBase(pTft, w, h), buttons(buttonArray), buttonCount(count) {
+    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, String message, TftButton *buttonArray[], uint8_t count)
+        : PopupBase(pTft, w, h), message(message), buttons(buttonArray), buttonCount(count) {
 
-        uint16_t totalButtonWidth = 0;
+        uint16_t maxRowWidth = w - 20; // Max szélesség, kis margóval
+        uint16_t buttonHeight = DIALOG_BUTTON_HEIGHT;
+        uint8_t buttonsPerRow = 1;
+        uint16_t totalWidth = 0;
 
-        // Gombok összélességének kiszámítása (gap-ekkel együtt)
+        // Kiszámoljuk, hogy hány gomb fér el egy sorban
         for (uint8_t i = 0; i < buttonCount; i++) {
-            totalButtonWidth += buttons[i]->getWidth();
-        }
-        totalButtonWidth += (buttonCount - 1) * DIALOG_BUTTONS_GAP;
-
-        // Ha a gombok összélessége nagyobb, mint a dialógus szélessége, csökkentsük a rést
-        int8_t gap = DIALOG_BUTTONS_GAP;
-        if (totalButtonWidth > w) {
-            gap = (w - totalButtonWidth + (buttonCount - 1) * DIALOG_BUTTONS_GAP) / (buttonCount - 1);
-            totalButtonWidth = 0;
-            for (uint8_t i = 0; i < buttonCount; i++) {
-                totalButtonWidth += buttons[i]->getWidth();
+            totalWidth += buttons[i]->getWidth() + DIALOG_BUTTONS_GAP;
+            if (totalWidth - DIALOG_BUTTONS_GAP > maxRowWidth) {
+                break; // Ha túlcsordul, az előző szám volt a max
             }
-            totalButtonWidth += (buttonCount - 1) * gap;
+            buttonsPerRow++;
         }
+        buttonsPerRow--; // Az utolsó túlcsordulás miatt csökkentjük
 
-        // Gombok kezdő X pozíciója (középre igazítás)
-        uint16_t startX = x + (w - totalButtonWidth) / 2;
-        uint16_t buttonY = y + h - DIALOG_BUTTON_HEIGHT - 10;
+        // Kiszámoljuk a sorok számát
+        uint8_t rowCount = (buttonCount + buttonsPerRow - 1) / buttonsPerRow; // Felkerekítés
+        uint16_t totalHeight = rowCount * buttonHeight + (rowCount - 1) * DIALOG_BUTTONS_GAP;
 
-        // Gombok elhelyezése
+// Szöveg alatti térköz kiszámítása
+#define SPACING_AFTER_MESSAGE 20 // Kis térköz a szöveg után
+        uint16_t startY = contentY + SPACING_AFTER_MESSAGE;
+
+        // Gombok pozicionálása több sorban
+        uint8_t row = 0, col = 0;
+        uint16_t startX = 0;
         for (uint8_t i = 0; i < buttonCount; i++) {
-            buttons[i]->setPosition(startX, buttonY);
-            startX += buttons[i]->getWidth() + gap;
+            // Sor elején újraszámoljuk a kezdő X-et (középre igazítás)
+            if (col == 0) {
+                uint16_t rowWidth = 0;
+                uint8_t itemsInRow = min(buttonsPerRow, buttonCount - i);
+                for (uint8_t j = 0; j < itemsInRow; j++) {
+                    rowWidth += buttons[i + j]->getWidth();
+                }
+                rowWidth += (itemsInRow - 1) * DIALOG_BUTTONS_GAP;
+                startX = x + (w - rowWidth) / 2;
+            }
+
+            // Gomb elhelyezése
+            buttons[i]->setPosition(startX, startY);
+            startX += buttons[i]->getWidth() + DIALOG_BUTTONS_GAP;
+            col++;
+
+            // Ha betelt egy sor, új sorba lépünk
+            if (col >= buttonsPerRow) {
+                col = 0;
+                row++;
+                startY += buttonHeight + DIALOG_BUTTONS_GAP;
+            }
+        }
+    }
+
+    ~MultiButtonDialog() {
+        for (uint8_t i = 0; i < buttonCount; i++) {
+            delete buttons[i];
         }
     }
 

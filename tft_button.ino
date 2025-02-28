@@ -26,7 +26,7 @@ TftButton buttons[] = {
 };
 
 #include "MultiButtonDialog.h"
-// #include "PopUpDialog.h"
+#include "PopUpDialog.h"
 
 PopupBase *dialog = nullptr;
 void popupCallback(String label, ButtonState_t state) {
@@ -88,14 +88,29 @@ void loop() {
         if (buttonLabel.equals("Push")) {
             if (dialog == nullptr) {
                 // Dialógus ablak létrehozása (tft, szélesség, magasság, üzenet, callback, okText, cancelText)
-                // dialog = new PopUpDialog(&tft, 300, 150, "Folytassuk?", popupCallback, "Igen", "Lehet megse kellene");
+                dialog = new PopUpDialog(&tft, 300, 150, "sanyi", "Folytassuk?", popupCallback, "Igen", "Lehet megse kellene");
 
-                TftButton btn1(&tft, 0, 0, 80, 30, "OK", ButtonType::PUSHABLE, popupCallback);
-                TftButton btn2(&tft, 0, 0, 80, 30, "Cancel", ButtonType::PUSHABLE, popupCallback);
-                TftButton btn3(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback);
+                // TftButton *buttons[] = {
+                //     new TftButton(&tft, 0, 0, 80, 30, "OK", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Cancel", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                //     new TftButton(&tft, 0, 0, 80, 30, "Retry", ButtonType::PUSHABLE, popupCallback),
+                // };
 
-                TftButton *buttons[] = {&btn1, &btn2, &btn3};
-                dialog = new MultiButtonDialog(&tft, 400, 100, buttons, 3);
+                // dialog = new MultiButtonDialog(&tft, 400, 250, "Valasszon opciot!", buttons, 17);
             }
 
             // Dialógus megjelenítése/elrejtése
