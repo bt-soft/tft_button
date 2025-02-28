@@ -19,7 +19,6 @@ void buttonsCallback(String label, ButtonState_t state) {
 #define BUTTONS_GAP 3      // A gombok közötti térköz pixelekben
 #define BUTTON_X(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
 TftButton buttons[] = {
-#define BUTTON_X(n) (BUTTONS_X_START + (BUTTON_W + BUTTONS_GAP) * n)
     TftButton(&tft, BUTTON_X(0), BUTTONS_Y, BUTTON_W, BUTTON_H, "Push", ButtonType::PUSHABLE, buttonsCallback),
     TftButton(&tft, BUTTON_X(1), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-1", ButtonType::TOGGLE, buttonsCallback),
     TftButton(&tft, BUTTON_X(2), BUTTONS_Y, BUTTON_W, BUTTON_H, "Sw-2", ButtonType::TOGGLE, buttonsCallback, ButtonState::ON),

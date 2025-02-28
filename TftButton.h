@@ -33,7 +33,7 @@ class TftButton {
 
 private:
     TFT_eSPI *pTft;
-    uint8_t x, y, w, h;
+    uint16_t x, y, w, h;
     String label;
     ButtonState state;
     ButtonState oldState;
@@ -93,10 +93,17 @@ private:
     }
 
 public:
-    /**
-     *
-     */
-    TftButton(TFT_eSPI *pTft, uint8_t x, uint8_t y, uint8_t w, uint8_t h, String label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+    /// @brief
+    /// @param pTft TFT példány
+    /// @param x  x pozíció
+    /// @param y y pozíció
+    /// @param w szélesség
+    /// @param h magasság
+    /// @param label felirat
+    /// @param type típus (push, toggle)
+    /// @param callback callback
+    /// @param state aktuális állapot
+    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, String label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
         : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
 
         this->state = this->oldState = state;
@@ -112,7 +119,7 @@ public:
     /**
      *
      */
-    void setPosition(uint8_t x, uint8_t y) {
+    void setPosition(uint16_t x, uint16_t y) {
         this->x = x;
         this->y = y;
     }
@@ -122,9 +129,9 @@ public:
      */
     void draw() {
 
-        if (buttonPressed) {
 // A gomb teljes szélességét és magasságát kihasználó sötétedés -> benyomás hatás keltés
 #define DARKEN_COLORS_STEPS 6 // Több lépés, erősebb hatás
+        if (buttonPressed) {
             uint8_t stepWidth = w / DARKEN_COLORS_STEPS;
             uint8_t stepHeight = h / DARKEN_COLORS_STEPS;
             for (uint8_t i = 0; i < DARKEN_COLORS_STEPS; i++) {
@@ -197,7 +204,7 @@ public:
     }
 
     /**
-     * Button állípot -> String konverzió
+     * Button állapot -> String konverzió
      */
     static const __FlashStringHelper *decodeState(ButtonState_t _state) {
         switch (_state) {

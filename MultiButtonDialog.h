@@ -35,6 +35,17 @@ public:
         }
         totalButtonWidth += (buttonCount - 1) * DIALOG_BUTTONS_GAP;
 
+        // Ha a gombok összélessége nagyobb, mint a dialógus szélessége, csökkentsük a rést
+        int8_t gap = DIALOG_BUTTONS_GAP;
+        if (totalButtonWidth > w) {
+            gap = (w - totalButtonWidth + (buttonCount - 1) * DIALOG_BUTTONS_GAP) / (buttonCount - 1);
+            totalButtonWidth = 0;
+            for (uint8_t i = 0; i < buttonCount; i++) {
+                totalButtonWidth += buttons[i]->getWidth();
+            }
+            totalButtonWidth += (buttonCount - 1) * gap;
+        }
+
         // Gombok kezdő X pozíciója (középre igazítás)
         uint16_t startX = x + (w - totalButtonWidth) / 2;
         uint16_t buttonY = y + h - DIALOG_BUTTON_HEIGHT - 10;
@@ -42,7 +53,7 @@ public:
         // Gombok elhelyezése
         for (uint8_t i = 0; i < buttonCount; i++) {
             buttons[i]->setPosition(startX, buttonY);
-            startX += buttons[i]->getWidth() + DIALOG_BUTTONS_GAP;
+            startX += buttons[i]->getWidth() + gap;
         }
     }
 
