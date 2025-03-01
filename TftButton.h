@@ -27,14 +27,55 @@ typedef enum ButtonType_t {
 typedef void (*ButtonCallback)(String, ButtonState_t);
 
 /**
+ * @class TftButton
+ * @brief Egy osztály, amely egy gombot reprezentál egy TFT kijelzőn.
  *
+ * Ez az osztály lehetőséget biztosít gombok létrehozására és kezelésére egy TFT kijelzőn a TFT_eSPI könyvtár használatával.
+ * Támogatja a különböző gombtípusokat (nyomógomb, kapcsoló) és állapotokat (be, ki, tartás, tiltott).
+ *
+ * @private
+ * @var TFT_eSPI* pTft
+ * Pointer a TFT kijelző példányára.
+ *
+ * @var uint16_t x
+ * A gomb X-koordinátája.
+ *
+ * @var uint16_t y
+ * A gomb Y-koordinátája.
+ *
+ * @var uint16_t w
+ * A gomb szélessége.
+ *
+ * @var uint16_t h
+ * A gomb magassága.
+ *
+ * @var const char* label
+ * A gomb felirata.
+ *
+ * @var ButtonState state
+ * A gomb aktuális állapota.
+ *
+ * @var ButtonState oldState
+ * A gomb előző állapota.
+ *
+ * @var ButtonType type
+ * A gomb típusa.
+ *
+ * @var ButtonCallback callback
+ * Callback függvény a gomb eseményeinek kezelésére.
+ *
+ * @var uint16_t colors[3]
+ * A gomb színei különböző állapotokhoz.
+ *
+ * @var bool buttonPressed
+ * Flag a gomb nyomva tartásának követésére.
  */
 class TftButton {
 
 private:
     TFT_eSPI *pTft;
     uint16_t x, y, w, h;
-    String label;
+    const char *label;
     ButtonState state;
     ButtonState oldState;
     ButtonType type;
@@ -42,9 +83,7 @@ private:
     uint16_t colors[3] = {TFT_COLOR(65, 65, 114), TFT_COLOR(65, 65, 114) /*TFT_DARKGREEN*/, TFT_COLOR(65, 65, 65)};
     bool buttonPressed; // Flag a gomb nyomva tartásának követésére
 
-    /**
-     *
-     */
+    /// @brief Lenyomták a gombot
     void pressed() {
         buttonPressed = true;
         oldState = state;
@@ -52,9 +91,7 @@ private:
         draw();
     }
 
-    /**
-     *
-     */
+    /// @brief Felengedték a gombot
     void released() {
         buttonPressed = false;
         if (type == TOGGLE) {
@@ -70,9 +107,10 @@ private:
         }
     }
 
-    /**
-     * Benyomott gomb háttérszín gradiens
-     */
+    /// @brief Benyomott gomb háttérszín gradiens
+    /// @param color
+    /// @param amount
+    /// @return
     uint16_t darkenColor(uint16_t color, uint8_t amount) {
         uint8_t r = (color & 0xF800) >> 11;
         uint8_t g = (color & 0x07E0) >> 5;
@@ -86,7 +124,7 @@ private:
     }
 
 public:
-    /// @brief
+    /// @brief button konstruktor
     /// @param pTft TFT példány
     /// @param x  x pozíció
     /// @param y y pozíció
@@ -96,34 +134,44 @@ public:
     /// @param type típus (push, toggle)
     /// @param callback callback
     /// @param state aktuális állapot
-    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, String label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
         : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
 
         this->state = this->oldState = state;
     }
 
-    /**
-     *
-     */
+    /// @brief Konstruktor csak a szélesség és a magasság megadásával.
+    ///         A pozíciót kiszámítjuk máshol és beállítjuk a setPosition(uint16_t x, uint16_t y)-al
+    /// @param pTft TFT példány
+    /// @param w szélesség
+    /// @param h magasság
+    /// @param label felirat
+    /// @param type típus (push, toggle)
+    /// @param callback callback
+    /// @param state aktuális állapot
+    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+        : TftButton(pTft, 0, 0, w, h, label, type, callback, state) {
+    }
+
+    /// @brief Button szélességének lekérése
+    /// @return
     uint8_t getWidth() {
         return w;
     }
 
-    /**
-     *
-     */
+    /// @brief Button x/y pozíciójának beállítása
+    /// @param x
+    /// @param y
     void setPosition(uint16_t x, uint16_t y) {
         this->x = x;
         this->y = y;
     }
 
-    /**
-     * Kirajzolás
-     */
+    /// @brief button kirajzolása
     void draw() {
 
-// A gomb teljes szélességét és magasságát kihasználó sötétedés -> benyomás hatás keltés
-#define DARKEN_COLORS_STEPS 6 // Több lépés, erősebb hatás
+        // A gomb teljes szélességét és magasságát kihasználó sötétedés -> benyomás hatás keltés
+        constexpr uint8_t DARKEN_COLORS_STEPS = 6; // Több lépés, erősebb hatás
         if (buttonPressed) {
             uint8_t stepWidth = w / DARKEN_COLORS_STEPS;
             uint8_t stepHeight = h / DARKEN_COLORS_STEPS;
@@ -150,11 +198,11 @@ public:
         pTft->setFreeFont(&FreeSansBold9pt7b);
         pTft->setTextSize(1);
         pTft->setTextPadding(0);
-#define BUTTON_LABEL_MARGIN_TOP 3 // A felirat a gomb felső részéhez képest
+        constexpr uint8_t BUTTON_LABEL_MARGIN_TOP = 3; // A felirat a gomb felső részéhez képest
         pTft->drawString(label, x + w / 2, y - BUTTON_LABEL_MARGIN_TOP + h / 2);
 
-// LED csík kirajzolása ha a gomb aktív vagy push, és nyomják
-#define BUTTON_LED_HEIGHT 5
+        // LED csík kirajzolása ha a gomb aktív vagy push, és nyomják
+        constexpr uint8_t BUTTON_LED_HEIGHT = 5;
         if (state == ON or (type == PUSHABLE and buttonPressed)) {
             pTft->fillRect(x + 10, y + h - BUTTON_LED_HEIGHT - 3, w - 20, BUTTON_LED_HEIGHT, TFT_GREEN);
         } else if (type == TOGGLE) {
@@ -162,12 +210,13 @@ public:
         }
     }
 
-    /**
-     * Touch adat van
-     */
+    /// @brief A gomb touch eseményeinek kezelése
+    /// @param touched Jelzi, hogy történt-e érintési esemény.
+    /// @param tx Az érintési esemény x-koordinátája.
+    /// @param ty Az érintési esemény y-koordinátája.
     void handleTouch(bool touched, uint16_t tx, uint16_t ty) {
 
-        // Ha tiltott, akkor nem megyünk tovább
+        // Ha tiltott a gomb, akkor nem megyünk tovább
         if (state == DISABLED) {
             return;
         }
@@ -181,24 +230,23 @@ public:
         }
     }
 
-    /**
-     * A gombot nyomták meg?
-     */
+    /// @brief Ezt a gombot nyomták meg?
+    /// @param tx touch x
+    /// @param ty touch y
+    /// @return true -> ezt a gombot nyomták meg
     bool contains(uint16_t tx, uint16_t ty) {
         return (tx >= x && tx <= x + w && ty >= y && ty <= y + h);
     }
 
-    /**
-     *
-     */
+    /// @brief Button állapotának beállítása
+    /// @param state új állapot
     void setState(ButtonState_t state) {
         this->state = state;
         draw();
     }
 
-    /**
-     *
-     */
+    /// @brief Button állapotának lekérése
+    /// @return állapot
     ButtonState_t getState() {
         return state;
     }

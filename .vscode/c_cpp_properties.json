@@ -13,7 +13,8 @@
                 "-mthumb",
                 "-ffunction-sections",
                 "-fdata-sections",
-                "-fno-exceptions"
+                "-fexceptions",
+                "-fstack-protector"
             ],
             "intelliSenseMode": "gcc-x64",
             "includePath": [

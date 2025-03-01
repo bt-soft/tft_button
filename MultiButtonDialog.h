@@ -4,13 +4,25 @@
 #include "PopupBase.h"
 #include "TftButton.h"
 
+/**
+ * @class MultiButtonDialog
+ * @brief Több gombos párbeszédpanel TFT képernyőn.
+ *
+ * Ez az osztály egy olyan párbeszédpanelt képvisel, amely üzenetet és több gombot jelenít meg egy TFT képernyőn.
+ * A PopupBase osztályból származik.
+ */
 class MultiButtonDialog : public PopupBase {
 
 private:
-    String message;
-    TftButton **buttons;
-    uint8_t buttonCount;
+    const __FlashStringHelper *message; ///< Az üzenet, amely megjelenik a párbeszédpanelen.
+    TftButton **buttons;                ///< A megjelenítendő gombok mutatóinak tömbje.
+    uint8_t buttonCount;                ///< A párbeszédpanelen lévő gombok száma.
 
+    /**
+     * @brief A párbeszédpanel megrajzolása a TFT képernyőn.
+     *
+     * Ez a metódus beállítja a szöveg színét, szöveg helyzetét, és megrajzolja az üzenetet és a gombokat a képernyőn.
+     */
     void drawDialog() {
         pTft->setTextColor(TFT_WHITE);
         pTft->setTextDatum(MC_DATUM);
@@ -22,9 +34,20 @@ private:
         }
     }
 
-public:
-    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, String message, TftButton *buttonArray[], uint8_t count)
-        : PopupBase(pTft, w, h), message(message), buttons(buttonArray), buttonCount(count) {
+protected:
+    /**
+     * @brief MultiButtonDialog objektum létrehozása.
+     *
+     * @param pTft Pointer a TFT_eSPI objektumra.
+     * @param w A párbeszédpanel szélessége.
+     * @param h A párbeszédpanel magassága.
+     * @param title A dialógus címe (opcionális).
+     * @param message Az üzenet, amely megjelenik a párbeszédpanelen.
+     * @param buttons A gombok mutatóinak tömbje.
+     * @param buttonCount A gombok száma.
+     */
+    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount)
+        : PopupBase(pTft, w, h, title), message(message), buttons(buttons), buttonCount(buttonCount) {
 
         uint16_t maxRowWidth = w - 20; // Max szélesség, kis margóval
         uint16_t buttonHeight = DIALOG_BUTTON_HEIGHT;
@@ -45,8 +68,8 @@ public:
         uint8_t rowCount = (buttonCount + buttonsPerRow - 1) / buttonsPerRow; // Felkerekítés
         uint16_t totalHeight = rowCount * buttonHeight + (rowCount - 1) * DIALOG_BUTTONS_GAP;
 
-// Szöveg alatti térköz kiszámítása
-#define SPACING_AFTER_MESSAGE 20 // Kis térköz a szöveg után
+        // Szöveg alatti térköz kiszámítása
+        constexpr uint8_t SPACING_AFTER_MESSAGE = 20; // Kis térköz a szöveg után
         uint16_t startY = contentY + SPACING_AFTER_MESSAGE;
 
         // Gombok pozicionálása több sorban
@@ -78,21 +101,51 @@ public:
         }
     }
 
+public:
+    /// @brief Dialóg destruktor
     ~MultiButtonDialog() {
+        Serial << "~MultiButtonDialog() start" << endl;
         for (uint8_t i = 0; i < buttonCount; i++) {
             delete buttons[i];
         }
+        Serial << "~MultiButtonDialog() end" << endl;
     }
 
+    /// @brief Megjeleníti a dialógust.
     void show() override {
         PopupBase::show();
         drawDialog();
     }
 
+    /// @brief Dialóg gombok touch eseményeinek kezelése
+    /// @param touched Jelzi, hogy történt-e érintési esemény.
+    /// @param tx Az érintési esemény x-koordinátája.
+    /// @param ty Az érintési esemény y-koordinátája.
     void handleTouch(bool touched, uint16_t tx, uint16_t ty) override {
+
+        // Először meghívjuk a PopupBase érintéskezelőjét
+        PopupBase::handleTouch(touched, tx, ty);
+
+        // Végigmegyünk az összes gombon
         for (uint8_t i = 0; i < buttonCount; i++) {
             buttons[i]->handleTouch(touched, tx, ty);
         }
+    }
+
+    /**
+     * @brief MultiButtonDialog objektum létrehozása.
+     *
+     * @param dialogPointer Az új dialóg pointere
+     * @param pTft Pointer a TFT_eSPI objektumra.
+     * @param w A párbeszédpanel szélessége.
+     * @param h A párbeszédpanel magassága.
+     * @param title A dialógus címe (opcionális).
+     * @param message Az üzenet, amely megjelenik a párbeszédpanelen.
+     * @param buttons A gombok mutatóinak tömbje.
+     * @param buttonCount A gombok száma.
+     */
+    static void createDialog(PopupBase **dialogPointer, TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount) {
+        *dialogPointer = new MultiButtonDialog(pTft, w, h, title, message, buttons, 17);
     }
 };
 
