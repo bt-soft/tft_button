@@ -28,19 +28,12 @@
  */
 class PopUpDialog : public PopupBase {
 private:
-    const __FlashStringHelper *message; // Flash memóriában tárolt dialóg szöveg
     TftButton *okButton;
-    TftButton *cancelButton = nullptr;
+    TftButton *cancelButton;
     ButtonCallback callback;
 
     /// @brief A párbeszédablak komponenseinek megjelenítése
     void drawDialog() {
-        if (message) {
-            pTft->setTextColor(TFT_WHITE);
-            pTft->setTextDatum(MC_DATUM);
-            pTft->drawString(message, x + w / 2, contentY);
-        }
-
         // Kirajzoljuk az OK gombot
         okButton->draw();
 
@@ -60,7 +53,7 @@ protected:
     /// @param okText Az OK gomb felirata.
     /// @param cancelText A Cancel gomb felirata (opcionális).
     PopUpDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback callback, const char *okText = "OK", const char *cancelText = nullptr)
-        : PopupBase(pTft, w, h, title), message(message), callback(callback) {
+        : PopupBase(pTft, w, h, title, message), callback(callback), cancelButton(nullptr) {
 
         // Kiszedjük a legnagyobb gomb felirat szélességét (10-10 pixel a szélén)
         uint8_t okButtonWidth = pTft->textWidth(okText) + DIALOG_BUTTON_TEXT_PADDING_X;                          // OK gomb szöveg szélessége + padding a gomb széleihez
@@ -71,7 +64,7 @@ protected:
         uint16_t okX = x + (w - totalButtonWidth) / 2; // Az OK gomb X pozíciója -> a gombok kezdő X pozíciója
 
         // Gombok Y pozíció
-        uint16_t buttonY = contentY + DIALOG_BUTTON_HEIGHT + (message ? 15 : 0);
+        uint16_t buttonY = contentY + DIALOG_BUTTON_HEIGHT;
 
         // OK gomb
         okButton = new TftButton(pTft, okX, buttonY, okButtonWidth, DIALOG_BUTTON_HEIGHT, okText, ButtonType::PUSHABLE, callback);

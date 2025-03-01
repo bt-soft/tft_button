@@ -57,6 +57,8 @@
                 "ARDUINO_RASPBERRY_PI_PICO",
                 "BOARD_NAME=\"RASPBERRY_PI_PICO\"",
                 "ARDUINO_ARCH_RP2040",
+                "DEBUG_RP2040_PORT=Serial",
+                "DEBUG_RP2040_CORE",
                 "WIFICC=CYW43_COUNTRY_WORLDWIDE",
                 "__DBL_MIN_EXP__=(-1021)",
                 "__HQ_FBIT__=15",

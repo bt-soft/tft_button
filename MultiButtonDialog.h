@@ -14,9 +14,8 @@
 class MultiButtonDialog : public PopupBase {
 
 private:
-    const __FlashStringHelper *message; ///< Az üzenet, amely megjelenik a párbeszédpanelen.
-    TftButton **buttons;                ///< A megjelenítendő gombok mutatóinak tömbje.
-    uint8_t buttonCount;                ///< A párbeszédpanelen lévő gombok száma.
+    TftButton **buttons; ///< A megjelenítendő gombok mutatóinak tömbje.
+    uint8_t buttonCount; ///< A párbeszédpanelen lévő gombok száma.
 
     /**
      * @brief A párbeszédpanel megrajzolása a TFT képernyőn.
@@ -24,10 +23,6 @@ private:
      * Ez a metódus beállítja a szöveg színét, szöveg helyzetét, és megrajzolja az üzenetet és a gombokat a képernyőn.
      */
     void drawDialog() {
-        pTft->setTextColor(TFT_WHITE);
-        pTft->setTextDatum(MC_DATUM);
-        pTft->drawString(message, x + w / 2, contentY);
-
         // Gombok kirajzolása
         for (uint8_t i = 0; i < buttonCount; i++) {
             buttons[i]->draw();
@@ -47,7 +42,7 @@ protected:
      * @param buttonCount A gombok száma.
      */
     MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount)
-        : PopupBase(pTft, w, h, title), message(message), buttons(buttons), buttonCount(buttonCount) {
+        : PopupBase(pTft, w, h, title, message), buttons(buttons), buttonCount(buttonCount) {
 
         uint16_t maxRowWidth = w - 20; // Max szélesség, kis margóval
         uint16_t buttonHeight = DIALOG_BUTTON_HEIGHT;
@@ -68,9 +63,8 @@ protected:
         uint8_t rowCount = (buttonCount + buttonsPerRow - 1) / buttonsPerRow; // Felkerekítés
         uint16_t totalHeight = rowCount * buttonHeight + (rowCount - 1) * DIALOG_BUTTONS_GAP;
 
-        // Szöveg alatti térköz kiszámítása
-        constexpr uint8_t SPACING_AFTER_MESSAGE = 20; // Kis térköz a szöveg után
-        uint16_t startY = contentY + SPACING_AFTER_MESSAGE;
+        // Button kezdő y pozíció
+        uint16_t startY = contentY;
 
         // Gombok pozicionálása több sorban
         uint8_t row = 0, col = 0;
@@ -146,6 +140,10 @@ public:
      */
     static void createDialog(PopupBase **dialogPointer, TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount) {
         *dialogPointer = new MultiButtonDialog(pTft, w, h, title, message, buttons, 17);
+    }
+
+    static void createDialog(PopupBase **dialogPointer, TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, TftButton **buttons, uint8_t buttonCount) {
+        *dialogPointer = new MultiButtonDialog(pTft, w, h, title, nullptr, buttons, 17);
     }
 };
 

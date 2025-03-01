@@ -24,52 +24,8 @@ typedef enum ButtonType_t {
 } ButtonType;
 
 // Callback típusa
-typedef void (*ButtonCallback)(String, ButtonState_t);
+typedef void (*ButtonCallback)(const char *, ButtonState_t);
 
-/**
- * @class TftButton
- * @brief Egy osztály, amely egy gombot reprezentál egy TFT kijelzőn.
- *
- * Ez az osztály lehetőséget biztosít gombok létrehozására és kezelésére egy TFT kijelzőn a TFT_eSPI könyvtár használatával.
- * Támogatja a különböző gombtípusokat (nyomógomb, kapcsoló) és állapotokat (be, ki, tartás, tiltott).
- *
- * @private
- * @var TFT_eSPI* pTft
- * Pointer a TFT kijelző példányára.
- *
- * @var uint16_t x
- * A gomb X-koordinátája.
- *
- * @var uint16_t y
- * A gomb Y-koordinátája.
- *
- * @var uint16_t w
- * A gomb szélessége.
- *
- * @var uint16_t h
- * A gomb magassága.
- *
- * @var const char* label
- * A gomb felirata.
- *
- * @var ButtonState state
- * A gomb aktuális állapota.
- *
- * @var ButtonState oldState
- * A gomb előző állapota.
- *
- * @var ButtonType type
- * A gomb típusa.
- *
- * @var ButtonCallback callback
- * Callback függvény a gomb eseményeinek kezelésére.
- *
- * @var uint16_t colors[3]
- * A gomb színei különböző állapotokhoz.
- *
- * @var bool buttonPressed
- * Flag a gomb nyomva tartásának követésére.
- */
 class TftButton {
 
 private:
@@ -150,7 +106,15 @@ public:
     /// @param callback callback
     /// @param state aktuális állapot
     TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
-        : TftButton(pTft, 0, 0, w, h, label, type, callback, state) {
+        : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
+        //: TftButton(pTft, 0, 0, w, h, label, type, callback, state) {
+
+        this->state = this->oldState = state;
+    }
+
+    /// @brief Destruktor
+    virtual ~TftButton() {
+        Serial << "~TftButton() -> label: " << label << endl;
     }
 
     /// @brief Button szélességének lekérése

@@ -3,7 +3,7 @@
 
 #include <TFT_eSPI.h>
 
-#define DIALOG_BUTTONS_GAP 5                  // A gombok közötti térköz pixelekben
+#define DIALOG_BUTTONS_GAP 10                 // A gombok közötti térköz pixelekben
 #define DIALOG_BUTTON_HEIGHT 30               // Gomb(ok) magassága a dialógusban
 #define DIALOG_BUTTON_TEXT_PADDING_X (2 * 15) // 15-15px X padding
 
@@ -23,9 +23,11 @@
 class PopupBase {
 
 private:
-    const __FlashStringHelper *title; // Flash memóriában tárolt title szöveg
-    uint16_t *backgroundBuffer;       // A kitakart terület mentésének  buffere
-    uint16_t y;                       // A leszármazottak nem láthatják az y pozíciót, csak a contentY alapján pozíciónálhatnak
+    const __FlashStringHelper *title;   // Flash memóriában tárolt title szöveg
+    const __FlashStringHelper *message; // Flash memóriában tárolt dialóg szöveg
+    uint16_t *backgroundBuffer;         // A kitakart terület mentésének  buffere
+    uint16_t y;                         // A leszármazottak nem láthatják az y pozíciót, csak a contentY alapján pozíciónálhatnak
+    uint16_t messageY;
     bool visible;
     uint16_t closeButtonX, closeButtonY; // X gomb pozíciója
 
@@ -45,14 +47,15 @@ protected:
      * @param h A dialógus magassága.
      * @param title A dialógus címe (opcionális).
      */
-    PopupBase(TFT_eSPI *tft, uint16_t w, uint16_t h, const __FlashStringHelper *title = nullptr)
-        : pTft(tft), w(w), h(h), visible(false), title(title) {
+    PopupBase(TFT_eSPI *tft, uint16_t w, uint16_t h, const __FlashStringHelper *title = nullptr, const __FlashStringHelper *message = nullptr)
+        : pTft(tft), w(w), h(h), visible(false), title(title), message(message) {
 
         x = (tft->width() - w) / 2;
         y = (tft->height() - h) / 2;
         backgroundBuffer = new uint16_t[w * h]();
 
-        contentY = y + (title ? 50 : 5); // Fejléc után kezdődjön a belső tér, ha van title
+        messageY = y + (title ? DIALOG_HEADER_HEIGHT + 15 : 5); // Az üzenet a fejléc utánkezdődjön, ha van fejléc
+        contentY = messageY + (message ? 15 : 0);               // A belső tér az üzenet után kezdődjön, ha van üzenet
     }
 
 public:
@@ -95,7 +98,7 @@ public:
             pTft->drawString(title, x + 10, y + 5 + (DIALOG_HEADER_HEIGHT - pTft->fontHeight()) / 2); // Bal oldali margó 10px
 
             // Fejléc vonala
-            pTft->drawLine(x, y + 30, x + w, y + 30, TFT_WHITE);
+            pTft->drawLine(x, y + DIALOG_HEADER_HEIGHT, x + w, y + DIALOG_HEADER_HEIGHT, TFT_WHITE);
         }
 
         // Dialógus kerete
@@ -107,6 +110,13 @@ public:
         pTft->setTextColor(TFT_WHITE);
         pTft->setTextDatum(MC_DATUM); // Középre igazítva az "X"-et
         pTft->drawString(F("X"), closeButtonX + DIALOG_CLOSE_BUTTON_SIZE / 2, closeButtonY + DIALOG_CLOSE_BUTTON_SIZE / 2);
+
+        // Üzenet kirajzolása, ha van üzenet
+        if (message) {
+            pTft->setTextColor(TFT_WHITE);
+            pTft->setTextDatum(MC_DATUM);
+            pTft->drawString(message, x + w / 2, messageY);
+        }
 
         visible = true;
     }

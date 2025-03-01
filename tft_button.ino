@@ -7,39 +7,24 @@ TFT_eSPI tft = TFT_eSPI();
 #include "PopUpDialog.h"
 
 PopupBase *dialog = nullptr;
-void popupCallback(String label, ButtonState_t state) {
-
-    Serial << label << F(" dialóg gomb megnyomva, state: ") << TftButton::decodeState(state) << endl;
-
-    if (dialog != nullptr) {
-        Serial << "delete dialog; start" << endl;
-        delete dialog;    // Töröljük a dialógust: eltünteti a dialógust és visszaállítja a háttért
-        dialog = nullptr; // Nullázzuk a mutatót, hogy elkerüljük a hibás hivatkozásokat
-        Serial << "delete dialog; end" << endl;
-    }
-}
-
-String buttonLabel = "";
-ButtonState_t buttonState;
-void buttonsCallback(String label, ButtonState_t state) {
-    // Ha van dialóg, ÉS látszik akkor nem megyünk itt tovább
-    if (dialog and dialog->isVisible()) {
-        return;
-    }
+const char *buttonLabel = nullptr;
+volatile ButtonState_t buttonState;
+void buttonCallback(const char *label, ButtonState_t state) {
     buttonLabel = label;
     buttonState = state;
+    // Serial << F("'") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
 }
 
 #define BUTTONS_X_START 10 // Gombok kezdő X koordinátája
 #define _BUTTON_HEIGHT 30
 #define _BUTTONS_GAP 10 // Define the gap between buttons
 #define BUTTON_X(n) (BUTTONS_X_START + (60 + _BUTTONS_GAP) * n)
-TftButton buttons[] = {
-    TftButton(&tft, BUTTON_X(0), 100, 60, _BUTTON_HEIGHT, "Popup", ButtonType::PUSHABLE, buttonsCallback),
-    TftButton(&tft, BUTTON_X(1), 100, 60, _BUTTON_HEIGHT, "Multi", ButtonType::PUSHABLE, buttonsCallback),
-    TftButton(&tft, BUTTON_X(2), 100, 60, _BUTTON_HEIGHT, "Sw-1", ButtonType::TOGGLE, buttonsCallback),
-    TftButton(&tft, BUTTON_X(3), 100, 60, _BUTTON_HEIGHT, "Sw-2", ButtonType::TOGGLE, buttonsCallback, ButtonState::ON),
-    TftButton(&tft, BUTTON_X(4), 100, 60, _BUTTON_HEIGHT, "Dis", ButtonType::TOGGLE, buttonsCallback)};
+TftButton screenButtons[] = {
+    TftButton(&tft, BUTTON_X(0), 100, 60, _BUTTON_HEIGHT, "Popup", ButtonType::PUSHABLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(1), 100, 60, _BUTTON_HEIGHT, "Multi", ButtonType::PUSHABLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(2), 100, 60, _BUTTON_HEIGHT, "Sw-1", ButtonType::TOGGLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(3), 100, 60, _BUTTON_HEIGHT, "Sw-2", ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
+    TftButton(&tft, BUTTON_X(4), 100, 60, _BUTTON_HEIGHT, "Dis", ButtonType::TOGGLE, buttonCallback)};
 
 /**
  *
@@ -64,10 +49,12 @@ void setup() {
     // tft.fillScreen(TFT_BLACK);
     // Serial << "button1: " << button1.getState() << endl;
 
-    for (TftButton &btn : buttons) {
-        btn.draw();
+    // Megjelenítjük a képernyő gombokat
+    for (TftButton &screenButton : screenButtons) {
+        screenButton.draw();
     }
-    buttons[4].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
+    // Az 5.-et letiltjuk
+    screenButtons[4].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
 }
 
 /**
@@ -77,73 +64,66 @@ void loop() {
 
     static uint16_t tx, ty;
     bool touched = tft.getTouch(&tx, &ty, 40); // A treshold értékét megnöveljük a default 20msec-ről 40-re
-    // A gombok service metódusainak hívása, de csak ha nincs dialog
-    if (!dialog or !dialog->isVisible()) {
-        for (TftButton &btn : buttons) {
-            btn.handleTouch(touched, tx, ty);
-        }
-    }
 
-    if (buttonLabel.length()) {
-
-        Serial << F("'") << buttonLabel << F("' state changed to: ") << TftButton::decodeState(buttonState) << endl;
-
-        if (buttonLabel.equals("Popup") or buttonLabel.equals("Multi")) {
-
-            Serial << "buttonLabel: " << buttonLabel << endl;
-
-            if (dialog == nullptr) {
-                if (buttonLabel.equals("Popup")) {
-                    // Dialógus ablak létrehozása (tft, szélesség, magasság, üzenet, callback, okText, cancelText)
-                    Serial << "PopUpDialog::createDialog()" << endl;
-                    PopUpDialog::createDialog(&dialog, &tft, 300, 150, F("Dialog title"), F("Folytassuk?"), popupCallback, "Igen", "Lehet megse kellene");
-                } else if (buttonLabel.equals("Multi")) {
-
-                    constexpr uint16_t MULTI_BUTTON_W = 80;
-                    constexpr uint16_t MULTI_BUTTON_H = 30;
-                    constexpr uint16_t MULTI_BUTTON_SIZE = 17;
-                    TftButton **buttons = new TftButton *[MULTI_BUTTON_SIZE] {
-                        new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "OK", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Cancel", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                            new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry", ButtonType::PUSHABLE, popupCallback),
-                    };
-
-                    Serial << "MultiButtonDialog::createDialog() start" << endl;
-                    MultiButtonDialog::createDialog(&dialog, &tft, 400, 250, F("Title"), F("Valasszon opciot!"), buttons, MULTI_BUTTON_SIZE);
-                    Serial << "MultiButtonDialog::createDialog() end" << endl;
-                } else {
-                    Serial << "Nem ismerem a(z) '" << buttonLabel << "' eseményt" << endl;
-                }
-            }
-
-            // Dialógus megjelenítése/elrejtése
-            if (dialog) {
-                if (dialog->isVisible()) {
-                    dialog->hide();
-                } else {
-                    dialog->show();
-                }
-            }
-        }
-
-        buttonLabel = "";
-    }
-
-    if (dialog) {
+    // A képernyő gombok service metódusainak hívása, de csak ha nincs vagy nem látható valamilyen dialog
+    if (dialog and dialog->isVisible()) {
         dialog->handleTouch(touched, tx, ty);
+    } else if (screenButtons) {
+        // Ha van(nak) képernyő gomb(ok)
+        for (TftButton &screenButton : screenButtons) {
+            screenButton.handleTouch(touched, tx, ty);
+        }
+    }
+
+    if (buttonLabel) {
+
+        if (!dialog) {
+
+            if (strcmp("Popup", buttonLabel) == 0) {
+                Serial << "PopUpDialog::createDialog() start" << endl;
+                PopUpDialog::createDialog(&dialog, &tft, 300, 150, F("Dialog title"), F("Folytassuk?"), buttonCallback, "Igen", "Lehet megse kellene");
+                Serial << "PopUpDialog::createDialog() end" << endl;
+
+            } else if (strcmp("Multi", buttonLabel) == 0) {
+                Serial << "MultiButtonDialog::createDialog() start" << endl;
+                constexpr uint16_t MULTI_BUTTON_W = 80;
+                constexpr uint16_t MULTI_BUTTON_H = 30;
+                constexpr uint16_t MULTI_BUTTON_SIZE = 17;
+                TftButton *multiButtons[MULTI_BUTTON_SIZE] = {
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "OK", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Cancel", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-1", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-2", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-3", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-4", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-5", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-6", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-7", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-8", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-9", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-10", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-11", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-12", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-13", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-14", ButtonType::PUSHABLE, buttonCallback),
+                    new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, "Retry-15", ButtonType::PUSHABLE, buttonCallback),
+                };
+
+                MultiButtonDialog::createDialog(&dialog, &tft, 400, 260, F("Valasszon opciot!"), nullptr, multiButtons, MULTI_BUTTON_SIZE);
+                Serial << "MultiButtonDialog::createDialog() end" << endl;
+
+            } else {
+                Serial << "Nem ismerem a(z) '" << buttonLabel << "' eseményt" << endl;
+            }
+
+            dialog->show();
+
+        } else {
+            dialog->hide();
+            delete dialog;
+            dialog = nullptr;
+        }
+
+        buttonLabel = nullptr;
     }
 }
