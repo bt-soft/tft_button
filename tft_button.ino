@@ -78,16 +78,10 @@ void loop() {
 
     // Nyomtak gombot?
     if (buttonLabel) {
-        Serial << F("'") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
 
         if (!dialog) {
 
-            if (strcmp(DIALOG_CLOSE_BUTTON_LABEL, buttonLabel) == 0) {
-                // Töröljük a dialógot
-                delete dialog;
-                dialog = nullptr;
-
-            } else if (strcmp("Popup", buttonLabel) == 0) {
+            if (strcmp("Popup", buttonLabel) == 0) {
                 Serial << "PopUpDialog::createDialog() start" << endl;
                 PopUpDialog::createDialog(&dialog, &tft, 300, 150, F("Dialog title"), F("Folytassuk?"), buttonCallback, "Igen", "Lehet megse kellene");
                 Serial << "PopUpDialog::createDialog() end" << endl;
@@ -125,7 +119,10 @@ void loop() {
             }
 
         } else {
-            // Töröljük a dialógot
+
+            Serial << F("Dialóg button Label: '") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
+
+            // Van dialog és megnyomtak rajta egy gombot -> Töröljük a dialógot
             delete dialog;
             dialog = nullptr;
         }

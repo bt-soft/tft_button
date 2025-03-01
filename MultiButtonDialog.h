@@ -152,7 +152,7 @@ public:
      * @param buttonCount A gombok száma.
      */
     static void createDialog(PopupBase **dialogPointer, TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount) {
-        *dialogPointer = new MultiButtonDialog(pTft, w, h, title, message, buttons, 17);
+        *dialogPointer = new MultiButtonDialog(pTft, w, h, title, message, buttons, buttonCount);
     }
 
     /**
@@ -167,7 +167,7 @@ public:
      * @param buttonCount A gombok száma.
      */
     static void createDialog(PopupBase **dialogPointer, TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, TftButton **buttons, uint8_t buttonCount) {
-        *dialogPointer = new MultiButtonDialog(pTft, w, h, title, nullptr, buttons, 17);
+        *dialogPointer = new MultiButtonDialog(pTft, w, h, title, nullptr, buttons, buttonCount);
     }
 };
 
