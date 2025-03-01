@@ -33,7 +33,11 @@ private:
     ButtonCallback callback;
 
     /// @brief A párbeszédablak komponenseinek megjelenítése
-    void drawDialog() {
+    virtual void drawDialog() override {
+
+        // Kirajzoljuk a dialógot
+        PopupBase::drawDialog();
+
         // Kirajzoljuk az OK gombot
         okButton->draw();
 
@@ -56,44 +60,36 @@ protected:
         : PopupBase(pTft, w, h, title, message), callback(callback), cancelButton(nullptr) {
 
         // Kiszedjük a legnagyobb gomb felirat szélességét (10-10 pixel a szélén)
-        uint8_t okButtonWidth = pTft->textWidth(okText) + DIALOG_BUTTON_TEXT_PADDING_X;                          // OK gomb szöveg szélessége + padding a gomb széleihez
-        uint8_t cancelButtonWidth = cancelText ? pTft->textWidth(cancelText) + DIALOG_BUTTON_TEXT_PADDING_X : 0; // Cancel gomb szöveg szélessége, ha van
+        uint8_t okButtonWidth = pTft->textWidth(okText) + DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X;                          // OK gomb szöveg szélessége + padding a gomb széleihez
+        uint8_t cancelButtonWidth = cancelText ? pTft->textWidth(cancelText) + DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X : 0; // Cancel gomb szöveg szélessége, ha van
 
         // Ha van Cancel gomb, akkor a két gomb közötti gap-et is figyelembe vesszük
-        uint16_t totalButtonWidth = cancelButtonWidth > 0 ? okButtonWidth + cancelButtonWidth + DIALOG_BUTTONS_GAP : okButtonWidth;
+        uint16_t totalButtonWidth = cancelButtonWidth > 0 ? okButtonWidth + cancelButtonWidth + DIALOG_DEFAULT_BUTTONS_GAP : okButtonWidth;
         uint16_t okX = x + (w - totalButtonWidth) / 2; // Az OK gomb X pozíciója -> a gombok kezdő X pozíciója
 
         // Gombok Y pozíció
-        uint16_t buttonY = contentY + DIALOG_BUTTON_HEIGHT;
+        uint16_t buttonY = contentY + DIALOG_DEFAULT_BUTTON_HEIGHT;
 
         // OK gomb
-        okButton = new TftButton(pTft, okX, buttonY, okButtonWidth, DIALOG_BUTTON_HEIGHT, okText, ButtonType::PUSHABLE, callback);
+        okButton = new TftButton(pTft, okX, buttonY, okButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, okText, ButtonType::PUSHABLE, callback);
 
         // Cancel gomb, ha van
         if (cancelText) {
-            uint16_t cancelX = okX + okButtonWidth + DIALOG_BUTTONS_GAP; // A Cancel gomb X pozíciója
-            cancelButton = new TftButton(pTft, cancelX, buttonY, cancelButtonWidth, DIALOG_BUTTON_HEIGHT, cancelText, ButtonType::PUSHABLE);
+            uint16_t cancelX = okX + okButtonWidth + DIALOG_DEFAULT_BUTTONS_GAP; // A Cancel gomb X pozíciója
+            cancelButton = new TftButton(pTft, cancelX, buttonY, cancelButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, cancelText, ButtonType::PUSHABLE);
         }
+
+        // Megjelenítjük a dialógust
+        drawDialog();
     }
 
 public:
     /// @brief Párbeszédablak destruktor
     ~PopUpDialog() {
-
-        Serial << "~PopUpDialog() start" << endl;
-
         delete okButton;
         if (cancelButton) {
             delete cancelButton;
         }
-
-        Serial << "~PopUpDialog() end" << endl;
-    }
-
-    /// @brief Megjeleníti a párbeszédablakot.
-    void show() override {
-        PopupBase::show();
-        drawDialog();
     }
 
     /// @brief A párbeszédablak gombjainak érintési eseményeinek kezelése
@@ -102,12 +98,24 @@ public:
     /// @param ty Az érintési esemény y-koordinátája.
     void handleTouch(bool touched, uint16_t tx, uint16_t ty) override {
 
-        // Először meghívjuk a PopupBase érintéskezelőjét
-        PopupBase::handleTouch(touched, tx, ty);
+        // Először meghívjuk a PopupBase érintéskezelőjét az 'X' detektálásához
+        if (PopupBase::checkCloseButtonTouch(touched, tx, ty)) {
 
+            // Megszerezzük a callback függvényt, és meghívjuk az "X" gombfelirattal
+            ButtonCallback callback = okButton->getCallback();
+            if (callback) {
+                callback(DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
+            }
+            return;
+        }
+
+        // OK gomb touch vizsgálat
         okButton->handleTouch(touched, tx, ty);
-        if (cancelButton)
+
+        // Cancel gomb touch vizsgálat, ha van Cancel gomb
+        if (cancelButton) {
             cancelButton->handleTouch(touched, tx, ty);
+        }
     }
 
     /**

@@ -2,11 +2,7 @@
 #define __TFT_BUTTON_H
 
 #include "ESP_free_fonts.h"
-
-#define TFT_COLOR(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3))
-#define COMPLEMENT_COLOR(color) \
-    (TFT_COLOR((255 - ((color >> 16) & 0xFF)), (255 - ((color >> 8) & 0xFF)), (255 - (color & 0xFF))))
-#define PUSHED_COLOR(color) ((((color & 0xF800) >> 1) & 0xF800) | (((color & 0x07E0) >> 1) & 0x07E0) | (((color & 0x001F) >> 1) & 0x001F))
+#include "tft_colors.h"
 
 // Gomb állapotai
 typedef enum ButtonState_t {
@@ -29,6 +25,9 @@ typedef void (*ButtonCallback)(const char *, ButtonState_t);
 class TftButton {
 
 private:
+    // Benyomott gomb háttérszín gradienshez, több iterációs lépés -> erősebb hatás
+    static constexpr uint8_t DARKEN_COLORS_STEPS = 6;
+
     TFT_eSPI *pTft;
     uint16_t x, y, w, h;
     const char *label;
@@ -36,8 +35,16 @@ private:
     ButtonState oldState;
     ButtonType type;
     ButtonCallback callback;
-    uint16_t colors[3] = {TFT_COLOR(65, 65, 114), TFT_COLOR(65, 65, 114) /*TFT_DARKGREEN*/, TFT_COLOR(65, 65, 65)};
+    uint16_t colors[3] = {TFT_COLOR(65, 65, 114) /*normal*/, TFT_COLOR(65, 65, 114) /*pushed*/, TFT_COLOR(65, 65, 65) /* diabled */};
     bool buttonPressed; // Flag a gomb nyomva tartásának követésére
+
+    /// @brief Ezt a gombot nyomták meg?
+    /// @param tx touch x
+    /// @param ty touch y
+    /// @return true -> ezt a gombot nyomták meg
+    bool contains(uint16_t tx, uint16_t ty) {
+        return (tx >= x && tx <= x + w && ty >= y && ty <= y + h);
+    }
 
     /// @brief Lenyomták a gombot
     void pressed() {
@@ -90,7 +97,7 @@ public:
     /// @param type típus (push, toggle)
     /// @param callback callback
     /// @param state aktuális állapot
-    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = nullptr, ButtonState state = OFF)
         : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
 
         this->state = this->oldState = state;
@@ -114,7 +121,6 @@ public:
 
     /// @brief Destruktor
     virtual ~TftButton() {
-        Serial << "~TftButton() -> label: " << label << endl;
     }
 
     /// @brief Button szélességének lekérése
@@ -135,7 +141,6 @@ public:
     void draw() {
 
         // A gomb teljes szélességét és magasságát kihasználó sötétedés -> benyomás hatás keltés
-        constexpr uint8_t DARKEN_COLORS_STEPS = 6; // Több lépés, erősebb hatás
         if (buttonPressed) {
             uint8_t stepWidth = w / DARKEN_COLORS_STEPS;
             uint8_t stepHeight = h / DARKEN_COLORS_STEPS;
@@ -194,14 +199,6 @@ public:
         }
     }
 
-    /// @brief Ezt a gombot nyomták meg?
-    /// @param tx touch x
-    /// @param ty touch y
-    /// @return true -> ezt a gombot nyomták meg
-    bool contains(uint16_t tx, uint16_t ty) {
-        return (tx >= x && tx <= x + w && ty >= y && ty <= y + h);
-    }
-
     /// @brief Button állapotának beállítása
     /// @param state új állapot
     void setState(ButtonState_t state) {
@@ -213,6 +210,13 @@ public:
     /// @return állapot
     ButtonState_t getState() {
         return state;
+    }
+
+    /// @brief Callback függvény elkérése
+    /// A PopupBase 'X' gomb kezeléséhez kell
+    /// @return
+    ButtonCallback getCallback() {
+        return callback;
     }
 
     /**

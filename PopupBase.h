@@ -3,12 +3,10 @@
 
 #include <TFT_eSPI.h>
 
-#define DIALOG_BUTTONS_GAP 10                 // A gombok közötti térköz pixelekben
-#define DIALOG_BUTTON_HEIGHT 30               // Gomb(ok) magassága a dialógusban
-#define DIALOG_BUTTON_TEXT_PADDING_X (2 * 15) // 15-15px X padding
-
-#define DIALOG_HEADER_HEIGHT 30     // Fejléc magassága
-#define DIALOG_CLOSE_BUTTON_SIZE 20 // "X" gomb mérete
+#define DIALOG_CLOSE_BUTTON_LABEL "X"                 // Jobb felső sarok bezáró gomb
+#define DIALOG_DEFAULT_BUTTONS_GAP 10                 // A gombok közötti térköz pixelekben
+#define DIALOG_DEFAULT_BUTTON_HEIGHT 30               // Gomb(ok) magassága a dialógusban
+#define DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X (2 * 15) // 15-15px X padding a gombok szövegépen
 
 /**
  * @class PopupBase
@@ -23,12 +21,14 @@
 class PopupBase {
 
 private:
+    static constexpr uint8_t DIALOG_CLOSE_BUTTON_SIZE = 20; // "X" gomb mérete
+    static constexpr uint8_t DIALOG_HEADER_HEIGHT = 30;     // Fejléc magassága
+
     const __FlashStringHelper *title;   // Flash memóriában tárolt title szöveg
     const __FlashStringHelper *message; // Flash memóriában tárolt dialóg szöveg
     uint16_t *backgroundBuffer;         // A kitakart terület mentésének  buffere
     uint16_t y;                         // A leszármazottak nem láthatják az y pozíciót, csak a contentY alapján pozíciónálhatnak
     uint16_t messageY;
-    bool visible;
     uint16_t closeButtonX, closeButtonY; // X gomb pozíciója
 
 protected:
@@ -36,51 +36,13 @@ protected:
     uint16_t x, w, h;
     uint16_t contentY;
 
-protected:
-    /**
-     * @brief PopupBase konstruktora.
-     *
-     * Inicializál egy új PopupBase osztály példányt a megadott paraméterekkel.
-     *
-     * @param tft A TFT_eSPI példányra mutató pointer.
-     * @param w A dialógus szélessége.
-     * @param h A dialógus magassága.
-     * @param title A dialógus címe (opcionális).
-     */
-    PopupBase(TFT_eSPI *tft, uint16_t w, uint16_t h, const __FlashStringHelper *title = nullptr, const __FlashStringHelper *message = nullptr)
-        : pTft(tft), w(w), h(h), visible(false), title(title), message(message) {
-
-        x = (tft->width() - w) / 2;
-        y = (tft->height() - h) / 2;
-        backgroundBuffer = new uint16_t[w * h]();
-
-        messageY = y + (title ? DIALOG_HEADER_HEIGHT + 15 : 5); // Az üzenet a fejléc utánkezdődjön, ha van fejléc
-        contentY = messageY + (message ? 15 : 0);               // A belső tér az üzenet után kezdődjön, ha van üzenet
-    }
-
-public:
-    /**
-     * @brief PopupBase destruktora.
-     *
-     * Elrejti a dialógot, ha látszik és felszabadítja a PopupBase példány által használt erőforrásokat.
-     */
-
-    virtual ~PopupBase() {
-        Serial << "~PopupBase() start" << endl;
-        if (visible) {
-            hide();
-        }
-        delete[] backgroundBuffer;
-        Serial << "~PopupBase() end" << endl;
-    }
-
     /**
      * @brief Megjeleníti a dialógust.
      *
      * Ez a metódus megjeleníti a dialógust a TFT kijelzőn, beleértve a címet és a bezárás gombot.
      * Emellett elmenti a dialógus által takart háttérterületet.
      */
-    virtual void show() {
+    virtual void drawDialog() {
         // Elmentjük a képernyő azon részét, amelyet a dialógus takar
         pTft->readRect(x, y, w, h, backgroundBuffer);
 
@@ -98,7 +60,8 @@ public:
             pTft->drawString(title, x + 10, y + 5 + (DIALOG_HEADER_HEIGHT - pTft->fontHeight()) / 2); // Bal oldali margó 10px
 
             // Fejléc vonala
-            pTft->drawLine(x, y + DIALOG_HEADER_HEIGHT, x + w, y + DIALOG_HEADER_HEIGHT, TFT_WHITE);
+            // pTft->drawLine(x, y + DIALOG_HEADER_HEIGHT, x + w, y + DIALOG_HEADER_HEIGHT, TFT_WHITE);
+            pTft->drawFastHLine(x, y + DIALOG_HEADER_HEIGHT, w, TFT_WHITE);
         }
 
         // Dialógus kerete
@@ -109,7 +72,7 @@ public:
         closeButtonY = y + 5;                                // Fejléc tetejéhez igazítva
         pTft->setTextColor(TFT_WHITE);
         pTft->setTextDatum(MC_DATUM); // Középre igazítva az "X"-et
-        pTft->drawString(F("X"), closeButtonX + DIALOG_CLOSE_BUTTON_SIZE / 2, closeButtonY + DIALOG_CLOSE_BUTTON_SIZE / 2);
+        pTft->drawString(F(DIALOG_CLOSE_BUTTON_LABEL), closeButtonX + DIALOG_CLOSE_BUTTON_SIZE / 2, closeButtonY + DIALOG_CLOSE_BUTTON_SIZE / 2);
 
         // Üzenet kirajzolása, ha van üzenet
         if (message) {
@@ -117,49 +80,72 @@ public:
             pTft->setTextDatum(MC_DATUM);
             pTft->drawString(message, x + w / 2, messageY);
         }
-
-        visible = true;
     }
 
     /**
-     * @brief Elrejti a dialógust és visszaállítja a hátteret.
+     * @brief PopupBase konstruktora.
      *
-     * Ez a metódus visszaállítja a háttérterületet, amelyet a dialógus megjelenítésekor elmentett,
-     * és elrejti a dialógust.
+     * Inicializál egy új PopupBase osztály példányt a megadott paraméterekkel.
+     *
+     * @param tft A TFT_eSPI példányra mutató pointer.
+     * @param w A dialógus szélessége.
+     * @param h A dialógus magassága.
+     * @param title A dialógus címe (opcionális).
+     */
+    PopupBase(TFT_eSPI *tft, uint16_t w, uint16_t h, const __FlashStringHelper *title = nullptr, const __FlashStringHelper *message = nullptr)
+        : pTft(tft), w(w), h(h), title(title), message(message) {
+
+        // Háttérbuffer lefoglalása
+        backgroundBuffer = new uint16_t[w * h]();
+
+        // Dialóg bal felső sarkának kiszámítása a képernyő középre igzaításához
+        x = (tft->width() - w) / 2;
+        y = (tft->height() - h) / 2;
+
+        messageY = y + (title ? DIALOG_HEADER_HEIGHT + 15 : 5); // Az üzenet a fejléc utánkezdődjön, ha van fejléc
+        contentY = messageY + (message ? 15 : 0);               // A belső tér az üzenet után kezdődjön, ha van üzenet
+    }
+
+public:
+    /**
+     * @brief PopupBase destruktora.
+     *
+     * Elrejti a dialógot, ha látszik és felszabadítja a PopupBase példány által használt erőforrásokat.
      */
 
-    virtual void hide() {
+    virtual ~PopupBase() {
         // Háttér visszaállítása
         pTft->pushRect(x, y, w, h, backgroundBuffer);
-        visible = false;
+
+        // Háttér buffer felszabadítása
+        delete[] backgroundBuffer;
     }
 
-    /**
-     * @brief Visszaadja, hogy a dialógus látható-e.
-     *
-     * @return Igaz, ha a dialógus látható, egyébként hamis.
-     */
-    bool isVisible() const {
-        return visible;
-    }
+    /// @brief A párbeszédablak gombjainak érintési eseményeinek kezelése, a leszármazott implemnetálja
+    /// @param touched Jelzi, hogy történt-e érintési esemény.
+    /// @param tx Az érintési esemény x-koordinátája.
+    /// @param ty Az érintési esemény y-koordinátája.
+    virtual void handleTouch(bool touched, uint16_t tx, uint16_t ty) {}
 
+protected:
     /**
-     * @brief Kezeli a dialógus 'X' gomb érintési eseményeit.
-     *
-     * Ez a metódus ellenőrzi, hogy a bezárás gombot megérintették-e, és elrejti a dialógust, ha igen.
+     * @brief Ez a metódus ellenőrzi, hogy a bezárás gombot megérintették-e?
      *
      * @param touched Jelzi, hogy történt-e érintési esemény.
      * @param tx Az érintési esemény x-koordinátája.
      * @param ty Az érintési esemény y-koordinátája.
+     * @returns true, ha megnyomták az X gombot a fejlécben
      */
-    virtual void handleTouch(bool touched, uint16_t tx, uint16_t ty) {
-        // Ha látható és megérintettük a "X" gombot, akkor elrejtjük a dialógust
-        if (touched and visible) {
+    bool checkCloseButtonTouch(bool touched, uint16_t tx, uint16_t ty) {
+
+        if (touched) {
             if (tx >= closeButtonX && tx <= closeButtonX + DIALOG_CLOSE_BUTTON_SIZE &&
                 ty >= closeButtonY && ty <= closeButtonY + DIALOG_CLOSE_BUTTON_SIZE) {
-                hide(); // Elrejtjük a dialógust
+                return true;
             }
         }
+
+        return false;
     }
 };
 

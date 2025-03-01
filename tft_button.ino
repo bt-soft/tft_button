@@ -12,7 +12,6 @@ volatile ButtonState_t buttonState;
 void buttonCallback(const char *label, ButtonState_t state) {
     buttonLabel = label;
     buttonState = state;
-    // Serial << F("'") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
 }
 
 #define BUTTONS_X_START 10 // Gombok kezdő X koordinátája
@@ -62,24 +61,33 @@ void setup() {
  */
 void loop() {
 
+    // Touch esemény lekérdezése
     static uint16_t tx, ty;
     bool touched = tft.getTouch(&tx, &ty, 40); // A treshold értékét megnöveljük a default 20msec-ről 40-re
 
-    // A képernyő gombok service metódusainak hívása, de csak ha nincs vagy nem látható valamilyen dialog
-    if (dialog and dialog->isVisible()) {
+    // Ha van diakógus, akkor annak a gombjainak a touch esemányeit hívjuk
+    if (dialog) {
         dialog->handleTouch(touched, tx, ty);
-    } else if (screenButtons) {
-        // Ha van(nak) képernyő gomb(ok)
+
+    } else if (!dialog and screenButtons) {
+        // Ha nincs dialóg, de vannak képernyő gombok, akkor azok touch eseményeit hívjuk meg
         for (TftButton &screenButton : screenButtons) {
             screenButton.handleTouch(touched, tx, ty);
         }
     }
 
+    // Nyomtak gombot?
     if (buttonLabel) {
+        Serial << F("'") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
 
         if (!dialog) {
 
-            if (strcmp("Popup", buttonLabel) == 0) {
+            if (strcmp(DIALOG_CLOSE_BUTTON_LABEL, buttonLabel) == 0) {
+                // Töröljük a dialógot
+                delete dialog;
+                dialog = nullptr;
+
+            } else if (strcmp("Popup", buttonLabel) == 0) {
                 Serial << "PopUpDialog::createDialog() start" << endl;
                 PopUpDialog::createDialog(&dialog, &tft, 300, 150, F("Dialog title"), F("Folytassuk?"), buttonCallback, "Igen", "Lehet megse kellene");
                 Serial << "PopUpDialog::createDialog() end" << endl;
@@ -116,14 +124,13 @@ void loop() {
                 Serial << "Nem ismerem a(z) '" << buttonLabel << "' eseményt" << endl;
             }
 
-            dialog->show();
-
         } else {
-            dialog->hide();
+            // Töröljük a dialógot
             delete dialog;
             dialog = nullptr;
         }
 
+        // Töröljük a gombnyomás eseményét
         buttonLabel = nullptr;
     }
 }
