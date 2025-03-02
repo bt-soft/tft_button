@@ -106,7 +106,8 @@ void createMultiButtonDialog(const char *buttonLabels[], int buttonsCount) {
 /**
  *
  */
-void handleButtonPress() {
+void handleScreenButtonPress() {
+
     if (strcmp("Popup", buttonLabel) == 0) {
         createPopupDialog();
 
@@ -148,10 +149,22 @@ void loop() {
         // Nyomtak gombot?
         if (buttonLabel) {
             if (!dialog) {
-                handleButtonPress();
+                handleScreenButtonPress();
+
             } else {
-                // Van dialog és megnyomtak rajta egy gombot -> Töröljük a dialógot
+                // Van dialog és megnyomtak rajta egy gombot
                 Serial << F("Dialóg button Label: '") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
+
+                // 'X'-el zárták be a dialógot?
+                if (dialog and strcmp(DIALOG_CLOSE_BUTTON_LABEL, buttonLabel) == 0) {
+                    delete dialog;
+                    dialog = nullptr;
+                    buttonLabel = nullptr;
+                    drawScreen();
+                    return;
+                }
+
+                // Csak teszt -> töröljük a dialógot
                 delete dialog;
                 dialog = nullptr;
                 drawScreen();
