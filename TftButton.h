@@ -98,10 +98,10 @@ public:
     /// @param callback callback
     /// @param state aktuális állapot
     TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = nullptr, ButtonState state = OFF)
-        : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
+        : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
-        this->state = this->oldState = state;
-    }
+    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType type, ButtonCallback callback = nullptr, ButtonState state = OFF)
+        : pTft(pTft), x(x), y(y), w(w), h(h), label(reinterpret_cast<const char *>(label)), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
     /// @brief Konstruktor csak a szélesség és a magasság megadásával.
     ///         A pozíciót kiszámítjuk máshol és beállítjuk a setPosition(uint16_t x, uint16_t y)-al
@@ -112,11 +112,11 @@ public:
     /// @param type típus (push, toggle)
     /// @param callback callback
     /// @param state aktuális állapot
-    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
-        : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
+    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+        : TftButton(pTft, w, h, reinterpret_cast<const char *>(label), type, callback, state) {}
 
-        this->state = this->oldState = state;
-    }
+    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+        : pTft(pTft), x(0), y(0), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
     /// @brief Destruktor
     virtual ~TftButton() {

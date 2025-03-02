@@ -19,7 +19,7 @@ void buttonCallback(const char *label, ButtonState_t state) {
 #define _BUTTONS_GAP 10 // Define the gap between buttons
 #define BUTTON_X(n) (BUTTONS_X_START + (60 + _BUTTONS_GAP) * n)
 TftButton screenButtons[] = {
-    TftButton(&tft, BUTTON_X(0), 100, 60, _BUTTON_HEIGHT, "Popup", ButtonType::PUSHABLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(0), 100, 60, _BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, buttonCallback),
     TftButton(&tft, BUTTON_X(1), 100, 60, _BUTTON_HEIGHT, "Multi", ButtonType::PUSHABLE, buttonCallback),
     TftButton(&tft, BUTTON_X(2), 100, 60, _BUTTON_HEIGHT, "Sw-1", ButtonType::TOGGLE, buttonCallback),
     TftButton(&tft, BUTTON_X(3), 100, 60, _BUTTON_HEIGHT, "Sw-2", ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
