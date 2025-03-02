@@ -1,14 +1,22 @@
 #include <Streaming.h>
 
 #include <TFT_eSPI.h> // TFT_eSPI könyvtár
-TFT_eSPI tft = TFT_eSPI();
+TFT_eSPI tft;
 
 #include "MultiButtonDialog.h"
 #include "PopUpDialog.h"
 
+/// @brief dialógus pointer
 PopupBase *dialog = nullptr;
+/// @brief Megnyomott gomb label
 const char *buttonLabel = nullptr;
+/// @brief Megnyomott gomb állapota
 ButtonState_t buttonState;
+
+/// @brief Gombok callback
+/// A megnyomott gomb visszaadja a label-jét és az állapotát
+/// @param label megnyomott gomb label
+/// @param state megnyomott gomb állapota
 void buttonCallback(const char *label, ButtonState_t state) {
     buttonLabel = label;
     buttonState = state;
