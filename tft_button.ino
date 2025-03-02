@@ -58,12 +58,11 @@ void setup() {
     Serial.begin(115200);
 
     tft.init();
+    tft.setRotation(1);
 
     // Beállítjuk a touch screen-t
     uint16_t calData[5] = {213, 3717, 234, 3613, 7};
     tft.setTouch(calData);
-
-    tft.setRotation(1);
 
     // tft.setTextColor(TFT_WHITE);
     // tft.drawString("Nyisd meg a soros portot!", 0, 0);
