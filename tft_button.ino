@@ -23,17 +23,18 @@ void buttonCallback(const char *label, ButtonState_t state) {
     buttonState = state;
 }
 
-#define SCREEN_BUTTONS_X_START 10 // Gombok kezdő X koordinátája
+#define SCREEN_BUTTONS_X_START 5 // Gombok kezdő X koordinátája
 #define SCREEN_BUTTON_HEIGHT 30
+#define SCREEN_BUTTON_WIDTH 70
 #define SCREEN_BUTTONS_GAP 10 // Define the gap between buttons
-#define BUTTON_X(n) (SCREEN_BUTTONS_X_START + (60 + SCREEN_BUTTONS_GAP) * n)
+#define BUTTON_X(n) (SCREEN_BUTTONS_X_START + (SCREEN_BUTTON_WIDTH + SCREEN_BUTTONS_GAP) * n)
 TftButton screenButtons[] = {
-    TftButton(&tft, BUTTON_X(0), 100, 60, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, buttonCallback),
-    TftButton(&tft, BUTTON_X(1), 100, 60, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, buttonCallback),
-    TftButton(&tft, BUTTON_X(2), 100, 60, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, buttonCallback),
-    TftButton(&tft, BUTTON_X(3), 100, 60, SCREEN_BUTTON_HEIGHT, F("FS List"), ButtonType::PUSHABLE, buttonCallback),
-    TftButton(&tft, BUTTON_X(4), 100, 60, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
-    TftButton(&tft, BUTTON_X(5), 100, 60, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, buttonCallback) //
+    TftButton(&tft, BUTTON_X(0), 100, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(1), 100, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(2), 100, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(3), 100, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("FS List"), ButtonType::PUSHABLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(4), 100, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
+    TftButton(&tft, BUTTON_X(5), 100, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, buttonCallback) //
 };
 
 //---------------------------
@@ -50,7 +51,7 @@ void drawScreen() {
     }
 
     // Az 5.-et letiltjuk
-    screenButtons[4].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
+    screenButtons[5].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
 }
 
 /**
