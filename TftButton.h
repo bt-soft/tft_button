@@ -2,7 +2,7 @@
 #define __TFT_BUTTON_H
 
 #include "ESP_free_fonts.h"
-#include "tft_colors.h"
+#include "utils.h"
 
 // Gomb állapotai
 typedef enum ButtonState_t {

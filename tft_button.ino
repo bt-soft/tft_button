@@ -10,10 +10,7 @@ PopupBase *dialog = nullptr;
 const char *buttonLabel = nullptr;
 ButtonState_t buttonState;
 void buttonCallback(const char *label, ButtonState_t state) {
-    static char savedLabel[50]; // Statikus változó a label tárolására
-    strncpy(savedLabel, label, sizeof(savedLabel) - 1);
-    savedLabel[sizeof(savedLabel) - 1] = '\0'; // Biztosítjuk, hogy a string null-terminált legyen
-    buttonLabel = savedLabel;
+    buttonLabel = label;
     buttonState = state;
 }
 
@@ -73,6 +70,44 @@ void setup() {
 /**
  *
  */
+void createPopupDialog() {
+    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), buttonCallback, "Igen", "Lehet megse kellene");
+}
+
+/**
+ *
+ */
+void createMultiButtonDialog(const char *buttonLabels[], int buttonsCount) {
+#define MULTI_BUTTON_W 80
+#define MULTI_BUTTON_H 30
+
+    TftButton **multiButtons = new TftButton *[buttonsCount];
+    for (uint8_t i = 0; i < buttonsCount; i++) {
+        multiButtons[i] = new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, buttonLabels[i], ButtonType::PUSHABLE, buttonCallback);
+    }
+    dialog = MultiButtonDialog::createDialog(&tft, 400, 260, F("Valasszon opciot!"), multiButtons, buttonsCount);
+}
+
+/**
+ *
+ */
+void handleButtonPress() {
+    if (strcmp("Popup", buttonLabel) == 0) {
+        createPopupDialog();
+
+    } else if (strcmp("Multi", buttonLabel) == 0) {
+
+        const __FlashStringHelper *buttonLabels[] = {
+            F("OK"), F("Cancel"), F("Retry-1"), F("Retry-2"), F("Retry-3"), F("Retry-4"), F("Retry-5"), F("Retry-6"),
+            F("Retry-7"), F("Retry-8"), F("Retry-9"), F("Retry-10"), F("Retry-11"), F("Retry-12"), F("Retry-13"), F("Retry-14"), F("Retry-15")};
+
+        createMultiButtonDialog(reinterpret_cast<const char **>(buttonLabels), ARRAY_ITEM_COUNT(buttonLabels));
+
+    } else {
+        Serial << F("Screen button Label: '") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
+    }
+}
+
 void loop() {
     try {
         // Touch esemény lekérdezése
@@ -91,41 +126,15 @@ void loop() {
 
         // Nyomtak gombot?
         if (buttonLabel) {
-
             if (!dialog) {
-
-                if (strcmp("Popup", buttonLabel) == 0) {
-                    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), buttonCallback, "Igen", "Lehet megse kellene");
-
-                } else if (strcmp("Multi", buttonLabel) == 0) {
-#define MULTI_BUTTON_W 80
-#define MULTI_BUTTON_H 30
-#define MULTI_BUTTON_SIZE 17
-
-                    const char *buttonLabels[MULTI_BUTTON_SIZE] = {
-                        "OK", "Cancel", "Retry-1", "Retry-2", "Retry-3", "Retry-4", "Retry-5", "Retry-6",
-                        "Retry-7", "Retry-8", "Retry-9", "Retry-10", "Retry-11", "Retry-12", "Retry-13", "Retry-14", "Retry-15"};
-                    TftButton **multiButtons = new TftButton *[MULTI_BUTTON_SIZE];
-                    for (int i = 0; i < MULTI_BUTTON_SIZE; i++) {
-                        multiButtons[i] = new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, buttonLabels[i], ButtonType::PUSHABLE, buttonCallback);
-                    }
-                    dialog = MultiButtonDialog::createDialog(&tft, 400, 260, F("Valasszon opciot!"), multiButtons, MULTI_BUTTON_SIZE);
-
-                } else {
-                    Serial << "Nem ismerem a(z) '" << buttonLabel << "' eseményt" << endl;
-                }
-
+                handleButtonPress();
             } else {
-
                 // Van dialog és megnyomtak rajta egy gombot -> Töröljük a dialógot
                 Serial << F("Dialóg button Label: '") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
-                if (dialog) {
-                    delete dialog;
-                    dialog = nullptr;
-                }
+                delete dialog;
+                dialog = nullptr;
                 drawScreen();
             }
-
             // Töröljük a gombnyomás eseményét
             buttonLabel = nullptr;
         }
