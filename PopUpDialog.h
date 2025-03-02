@@ -87,12 +87,10 @@ protected:
 public:
     /// @brief Párbeszédablak destruktor
     ~PopUpDialog() {
-        Serial << "PopUpDialog destructor called" << endl;
         delete okButton;
-        if (cancelButton != nullptr) {
+        if (cancelButton) {
             delete cancelButton;
         }
-        Serial << "PopUpDialog destructor end" << endl;
     }
 
     /// @brief A párbeszédablak gombjainak érintési eseményeinek kezelése
