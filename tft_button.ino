@@ -5,6 +5,7 @@ TFT_eSPI tft;
 
 #include "MultiButtonDialog.h"
 #include "PopUpDialog.h"
+#include "touchCalibrate.h"
 
 /// @brief dialógus pointer
 PopupBase *dialog = nullptr;
@@ -30,8 +31,9 @@ TftButton screenButtons[] = {
     TftButton(&tft, BUTTON_X(0), 100, 60, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, buttonCallback),
     TftButton(&tft, BUTTON_X(1), 100, 60, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, buttonCallback),
     TftButton(&tft, BUTTON_X(2), 100, 60, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, buttonCallback),
-    TftButton(&tft, BUTTON_X(3), 100, 60, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
-    TftButton(&tft, BUTTON_X(4), 100, 60, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, buttonCallback) //
+    TftButton(&tft, BUTTON_X(3), 100, 60, SCREEN_BUTTON_HEIGHT, F("FS List"), ButtonType::PUSHABLE, buttonCallback),
+    TftButton(&tft, BUTTON_X(4), 100, 60, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
+    TftButton(&tft, BUTTON_X(5), 100, 60, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, buttonCallback) //
 };
 
 //---------------------------
@@ -59,17 +61,23 @@ void setup() {
 
     tft.init();
     tft.setRotation(1);
+    tft.fillScreen(TFT_BLACK);
 
-    // Beállítjuk a touch screen-t
-    uint16_t calData[5] = {213, 3717, 234, 3613, 7};
-    tft.setTouch(calData);
+    /*
+    tft.setTextColor(TFT_WHITE);
+    tft.drawString("Nyisd meg a soros portot!", 0, 0);
+    while (!Serial) {
+    }
+    tft.fillScreen(TFT_BLACK);
+    */
 
-    // tft.setTextColor(TFT_WHITE);
-    // tft.drawString("Nyisd meg a soros portot!", 0, 0);
-    // while (!Serial) {
-    // }
-    // tft.fillScreen(TFT_BLACK);
-    // Serial << "button1: " << button1.getState() << endl;
+    // Beállítjuk a touch scren-t
+    // állítsd true-ra a 2. paramétert, ha újra akarod kalibrálni
+    TouchCalibrate::calibrate(&tft /*, true , true*/);
+    // Kézzel kalibráljuk be a touch screen-t
+    // uint16_t calData[5] = {213, 3717, 234, 3613, 7};
+    // uint16_t calData[5] = { 243, 3653, 265, 3580, 7 };
+    // tft.setTouch(calData);
 
     drawScreen();
 }
@@ -109,6 +117,9 @@ void handleButtonPress() {
             F("Retry-7"), F("Retry-8"), F("Retry-9"), F("Retry-10"), F("Retry-11"), F("Retry-12"), F("Retry-13"), F("Retry-14"), F("Retry-15")};
 
         createMultiButtonDialog(reinterpret_cast<const char **>(buttonLabels), ARRAY_ITEM_COUNT(buttonLabels));
+
+    } else if (strcmp("FS List", buttonLabel) == 0) {
+        TouchCalibrate::listAllFilesInDir();
 
     } else {
         Serial << F("Screen button Label: '") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
