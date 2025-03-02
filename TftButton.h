@@ -114,7 +114,6 @@ public:
     /// @param state aktuális állapot
     TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
         : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false) {
-        //: TftButton(pTft, 0, 0, w, h, label, type, callback, state) {
 
         this->state = this->oldState = state;
     }
@@ -235,9 +234,9 @@ public:
         //---- technikai állapot
         case PUSHED:
             return F("Pushed");
+        default:
+            return F("Unknown!!");
         }
-
-        return F("Unknown!!");
     }
 };
 

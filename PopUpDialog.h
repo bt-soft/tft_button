@@ -42,8 +42,9 @@ private:
         okButton->draw();
 
         // Ha van Cancel gomb, akkor kirajzoljuk azt is
-        if (cancelButton)
+        if (cancelButton) {
             cancelButton->draw();
+        }
     }
 
 protected:
@@ -86,10 +87,12 @@ protected:
 public:
     /// @brief Párbeszédablak destruktor
     ~PopUpDialog() {
+        Serial << "PopUpDialog destructor called" << endl;
         delete okButton;
-        if (cancelButton) {
+        if (cancelButton != nullptr) {
             delete cancelButton;
         }
+        Serial << "PopUpDialog destructor end" << endl;
     }
 
     /// @brief A párbeszédablak gombjainak érintési eseményeinek kezelése
@@ -113,7 +116,7 @@ public:
         okButton->handleTouch(touched, tx, ty);
 
         // Cancel gomb touch vizsgálat, ha van Cancel gomb
-        if (cancelButton) {
+        if (cancelButton != nullptr) {
             cancelButton->handleTouch(touched, tx, ty);
         }
     }
@@ -121,7 +124,6 @@ public:
     /**
      * @brief Létrehoz egy új PopUpDialog példányt.
      *
-     * @param dialogPointer Az új dialóg pointere
      * @param pTft A TFT_eSPI objektumra mutató pointer, amelyet a kijelzőhöz használnak.
      * @param w A párbeszédablak szélessége.
      * @param h A párbeszédablak magassága.
@@ -132,8 +134,8 @@ public:
      * @param cancelText A Cancel gomb szövege (alapértelmezett érték: nullptr).
      * @return PopUpDialog* Pointer az újonnan létrehozott PopUpDialog példányra.
      */
-    static void createDialog(PopupBase **dialogPointer, TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback callback, const char *okText = "OK", const char *cancelText = nullptr) {
-        *dialogPointer = new PopUpDialog(pTft, w, h, title, message, callback, okText, cancelText);
+    static PopUpDialog *createDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback callback, const char *okText = "OK", const char *cancelText = nullptr) {
+        return new PopUpDialog(pTft, w, h, title, message, callback, okText, cancelText);
     }
 };
 
