@@ -115,6 +115,9 @@ void handleButtonPress() {
     }
 }
 
+/**
+ *
+ */
 void loop() {
     try {
         // Touch esemény lekérdezése
